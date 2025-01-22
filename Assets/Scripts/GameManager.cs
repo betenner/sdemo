@@ -426,6 +426,7 @@ public class GameManager : MonoBehaviour
                 // 完美特效
                 if (simulated)
                 {
+                    SoundManager.instance.perfect.Play();
                     UIManager.instance.SetPopText("PERFECT");
                     if (fxPerfectHit)
                     {
@@ -438,6 +439,7 @@ public class GameManager : MonoBehaviour
                 }
                 else
                 {
+                    SoundManager.instance.good.Play();
                     UIManager.instance.SetPopText("Good");
                 }
 
@@ -525,6 +527,15 @@ public class GameManager : MonoBehaviour
                     var multiplier = bet * slotMultiplier[slotIndex] * (simulated ? perfectMultiplier : 1f);
                     var reward = baseReward * multiplier;
                     SetCoin(coin + (long)reward);
+                    SoundManager.instance.coin.Play();
+                    if (slotIndex < 2)
+                    {
+                        SoundManager.instance.reward.Play();
+                    }
+                    else
+                    {
+                        SoundManager.instance.rewardBig.Play();
+                    }
                     UIManager.instance.SetPopText($"+{(long)reward:#,0}");
 
                     // 特效
