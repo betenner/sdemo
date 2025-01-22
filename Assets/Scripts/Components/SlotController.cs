@@ -22,21 +22,22 @@ public class SlotController : MonoBehaviour
     [LabelText("每张大小 (像素)")]
     public Vector2Int slotSize;
 
-    [LabelText("初始速度 (张/秒)"), Range(0.1f, 60f)]
+    [LabelText("初始速度 (张/秒)"), Range(0.1f, 100f)]
     public float initSpeed = 20f;
 
-    [LabelText("初始滚动张数 (匀速)"), Range(1, 50)]
-    public int initSlotCount = 20;
+    [LabelText("高速滚动张数 (匀速)"), Range(1, 50)]
+    public int highspeedSlotCount = 20;
 
-    [LabelText("减速度 (张/秒^2)"), Range(0.1f, 50f)]
+    [LabelText("减速度 (张/秒^2)"), Range(0.1f, 100f)]
     public float decSpeed = 20f;
 
     [LabelText("停止速度 (张/秒)"), Range(0.1f, 50f)]
     public float stopSpeed = 3f;
 
-    private Sprite GetRandomSlot()
+    private Sprite GetRandomSlot(out int index)
     {
-        return (slotPools == null || slotPools.Length == 0) ? null : slotPools[UnityEngine.Random.Range(0, slotPools.Length)];
+        index = UnityEngine.Random.Range(0, slotPools.Length);
+        return (slotPools == null || slotPools.Length == 0) ? null : slotPools[index];
     }
 
     private bool _rolling = false;
@@ -45,7 +46,10 @@ public class SlotController : MonoBehaviour
     private SpriteRenderer _curSlot;
     private SpriteRenderer _up2Slot;
     private SpriteRenderer _up1Slot;
-    private Action _onStop;
+    private int _curSlotIndex = 0;
+    private int _up2SlotIndex = 0;
+    private int _up1SlotIndex = 0;
+    private Action<int> _onStop;
     private int _initSlotCount = 0;
     private float _speed = 0f;
     private float _acc = 0f;
@@ -56,15 +60,15 @@ public class SlotController : MonoBehaviour
         _rolling = false;
         _offset = 0f;
         _curSlot = slot1;
-        _curSlot.sprite = GetRandomSlot();
+        _curSlot.sprite = GetRandomSlot(out _curSlotIndex);
         _curSlot.sortingOrder = 0;
         _curSlot.transform.localPosition = Vector3.zero;
         _up1Slot = slot2;
-        _up1Slot.sprite = GetRandomSlot();
+        _up1Slot.sprite = GetRandomSlot(out _up1SlotIndex);
         _up1Slot.sortingOrder = 0;
         _up1Slot.transform.localPosition = UPP * slotSize.y * Vector3.up;
         _up2Slot = slot3;
-        _up2Slot.sprite = GetRandomSlot();
+        _up2Slot.sprite = GetRandomSlot(out _up2SlotIndex);
         _up2Slot.sortingOrder = 0;
         _up2Slot.transform.localPosition = UPP * slotSize.y * 2f * Vector3.up;
         _initSlotCount = 0;
@@ -76,7 +80,7 @@ public class SlotController : MonoBehaviour
         slot3.gameObject.SetActive(true);
     }
 
-    public void StartRolling(Action onStop)
+    public void StartRolling(Action<int> onStop)
     {
         _onStop = onStop;
         _rolling = true;
@@ -87,7 +91,7 @@ public class SlotController : MonoBehaviour
         if (!_rolling) return;
 
         // 向下滚动
-        if (_initSlotCount >= initSlotCount && !_stopping)
+        if (_initSlotCount >= highspeedSlotCount && !_stopping)
         {
             _speed += Time.deltaTime * _acc;
         }
@@ -106,12 +110,12 @@ public class SlotController : MonoBehaviour
         // 切换Slot
         if (_offset <= -UPP * slotSize.y)
         {
-            _curSlot = GetNextSlot(_curSlot);
-            _up1Slot = GetNextSlot(_up1Slot);
-            _up2Slot = GetNextSlot(_up2Slot);
+            _curSlot = GetNextSlot(_curSlot, out _curSlotIndex);
+            _up1Slot = GetNextSlot(_up1Slot, out _up1SlotIndex);
+            _up2Slot = GetNextSlot(_up2Slot, out _up2SlotIndex);
             _offset += UPP * slotSize.y;
             _up2Slot.transform.localPosition = (_offset + UPP * slotSize.y * 2f) * Vector3.up;
-            _up2Slot.sprite = GetRandomSlot();
+            _up2Slot.sprite = GetRandomSlot(out _up2SlotIndex);
             _initSlotCount++;
 
             // 停止
@@ -122,15 +126,31 @@ public class SlotController : MonoBehaviour
                 _up2Slot.gameObject.SetActive(false);
                 _curSlot.sortingOrder = 100;
                 _curSlot.transform.localPosition = Vector3.zero;
-                _onStop?.Invoke();
+                _onStop?.Invoke(_curSlotIndex);
             }
         }
     }
 
-    private SpriteRenderer GetNextSlot(SpriteRenderer slot)
+    private int GetSlotIndex(SpriteRenderer slot)
     {
-        if (slot == slot1) return slot2;
-        if (slot == slot2) return slot3;
+        if (slot == _curSlot) return _curSlotIndex;
+        if (slot == _up1Slot) return _up1SlotIndex;
+        return _up2SlotIndex;
+    }
+
+    private SpriteRenderer GetNextSlot(SpriteRenderer slot, out int index)
+    {
+        if (slot == slot1)
+        {
+            index = GetSlotIndex(slot2);
+            return slot2;
+        }
+        if (slot == slot2)
+        {
+            index = GetSlotIndex(slot3);
+            return slot3;
+        }
+        index = GetSlotIndex(slot1);
         return slot1;
     }
 }

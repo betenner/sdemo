@@ -139,8 +139,8 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 7fd07e946053c694ebd15bc4262136fc, type: 3}
   slotSize: {x: 525, y: 525}
   initSpeed: 20
-  initSlotCount: 1
-  decSpeed: 20
+  initSlotCount: 5
+  decSpeed: 50
   stopSpeed: 5
 --- !u!1 &4973501539553960273
 GameObject:
@@ -426,6 +426,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slotController: {fileID: 8959964751874852068}
+  bounceForce: 0.3
+  maxBounceTimes: 1
 --- !u!1 &6971417028340996977
 GameObject:
   m_ObjectHideFlags: 0

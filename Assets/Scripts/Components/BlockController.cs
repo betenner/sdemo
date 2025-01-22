@@ -12,6 +12,16 @@ public class BlockController : MonoBehaviour
     
     public Action<GameObject, bool> onCollisionEnd;
 
+    /// <summary>
+    /// 反弹力度
+    /// </summary>
+    public float bounceForce = 0.3f;
+
+    /// <summary>
+    /// 最大反弹次数
+    /// </summary>
+    public int maxBounceTimes = 1;
+
     private Rigidbody _rigidbody;
     private bool _waitForCollisionEnd = false;
     private GameObject _lastCollideObject = null;
@@ -21,6 +31,7 @@ public class BlockController : MonoBehaviour
     private float _simulateTargetY;
     private float _simulateYSpeed = 0f;
     private GameObject _simulateLastBlock;
+    private int _bounceTimes = 0;
 
     private void Awake()
     {
@@ -83,9 +94,17 @@ public class BlockController : MonoBehaviour
         if (GameManager.instance.fxNormalHit)
         {
             var fxGo = Instantiate(GameManager.instance.fxNormalHit);
-            fxGo.transform.position = collision.contacts[0].point + Vector3.back * 5f;
+            fxGo.transform.position = collision.contacts[0].point + 5f * Vector3.back;
+            fxGo.transform.localScale = GameManager.instance.fxNormalHitScale;
             fxGo.SetActive(true);
             this.Invoke(() => GameManager.instance.DestroyGameObject(fxGo), GameManager.instance.fxNormalHitDuration);
+        }
+
+        // 反弹处理
+        if (_bounceTimes < maxBounceTimes)
+        {
+            _bounceTimes++;
+            _rigidbody.AddForce(Vector3.up * bounceForce, ForceMode.Impulse);
         }
     }
 

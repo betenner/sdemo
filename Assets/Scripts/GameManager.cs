@@ -2,10 +2,9 @@ using Cinemachine;
 using DG.Tweening;
 using Sirenix.OdinInspector;
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -33,32 +32,86 @@ public class GameManager : MonoBehaviour
     public float blockHeight = 3.4f;
     #endregion
 
+    #region 资源数值
+    [Title("资源数值")]
+    [LabelText("初始体力"), Range(1, 100)]
+    public int initStamina = 100;
+    public int stamina { get; private set; }
+
+    [LabelText("初始金币"), Min(1000)]
+    public long initCoin = 1000000L;
+    public long coin { get; private set; }
+
+    [LabelText("基础奖励"), Min(1L)]
+    public long baseReward = 1000L;
+
+    [LabelText("完美下落额外倍率")]
+    public float perfectMultiplier = 10f;
+
+    [LabelText("最大倍率"), Range(1, 10)]
+    public int maxBet = 5;
+    public int bet { get; private set; }
+
+    [LabelText("Slot倍率 (需要与Slot数量一致)"), Range(1f, 1000f)]
+    public float[] slotMultiplier = { 1f, 5f, 20f, 100f};
+
+    #endregion
+
     #region 单摆数值
     [Title("单摆数值")]
     [LabelText("最大摆角 (度数)"), Range(1f, 179f), OnValueChanged("SetupPendulum")]
     public float pendulumMaxAngle = 30f;
 
-    [LabelText("摆动速率"), OnValueChanged("SetupPendulum")]
+    [LabelText("摆动速率"), Range(0.1f, 5f), OnValueChanged("SetupPendulum")]
     public float pendulumSpeed = 2f;
 
-    [LabelText("摆动力量"), OnValueChanged("SetupPendulum")]
+    [LabelText("摆动力量"), Range(1f, 1000f), OnValueChanged("SetupPendulum")]
     public float pendulumForce = 300f;
+    #endregion
+
+    #region 碰撞数值
+
+    [Title("碰撞数值")]
+    [LabelText("碰撞反弹比例"), Range(0.01f, 5f)]
+    public float hitBounceForce = 0.3f;
+
+    [LabelText("反弹次数"), Range(0, 5)]
+    public int hitMaxBounceTimes = 1;
+
+    [LabelText("完美下落阈值 (越大越简单)"), Range(0.001f, 0.5f)]
+    public float hitPerfectThreshold = 0.03f;
+
     #endregion
 
     #region 特效
 
     [Title("特效")]
-    [LabelText("楼层碰撞特效")]
+    [LabelText("普通下落特效")]
     public GameObject fxNormalHit;
 
-    [LabelText("楼层碰撞特效持续时间 (秒)"), Range(0.1f, 10f)]
+    [LabelText("普通下落特效持续时间 (秒)"), Range(0.1f, 10f)]
     public float fxNormalHitDuration = 0.5f;
 
-    [LabelText("楼层完美吸附特效")]
+    [LabelText("普通下落特效缩放")]
+    public Vector3 fxNormalHitScale = Vector3.one;
+
+    [LabelText("完美下落特效")]
     public GameObject fxPerfectHit;
 
-    [LabelText("楼层完美吸附特效时间 (秒)"), Range(0.1f, 10f)]
+    [LabelText("完美下落特效时间 (秒)"), Range(0.1f, 10f)]
     public float fxPerfectHitDuration = 0.5f;
+
+    [LabelText("完美下落特效缩放")]
+    public Vector3 fxPerfectHitScale = 3f * Vector3.one;
+
+    [LabelText("金币特效")]
+    public GameObject fxCoinShower;
+
+    [LabelText("金币特效时间 (秒)"), Range(0.1f, 10f)]
+    public float fxCoinShowerDuration = 1f;
+
+    [LabelText("金币特效缩放")]
+    public Vector3 fxCoinShowerScale = 6f * Vector3.one;
 
     #endregion
 
@@ -129,10 +182,16 @@ public class GameManager : MonoBehaviour
 
     public List<GameObject> deadBlocks { get; private set; } = new();
 
+    private float _coinSliderStartTime = 0f;
+    private float _coinSliderDuration = 0f;
+    private bool _coinSlider = false;
+    private long _coinSliderCurValue = 0L;
+    private long _coinSliderTargetValue = 0L;
+    private float _coinSliderDeltaValue = 0f;
+
     private void Awake()
     {
         _instance = this;
-        InitGame();
     }
 
     void Update()
@@ -141,6 +200,20 @@ public class GameManager : MonoBehaviour
         {
             _lastGravity = gravity;
             Physics.gravity = Vector3.down * gravity;
+        }
+
+        if (_coinSlider && _coinSliderDuration > 0f)
+        {
+            if (Time.time - _coinSliderStartTime < _coinSliderDuration)
+            {
+                _coinSliderCurValue += (long)(Time.deltaTime * _coinSliderDeltaValue);
+                UIManager.instance.coinText.text = _coinSliderCurValue.ToString("#,0");
+            }
+            else
+            {
+                _coinSlider = false;
+                UIManager.instance.coinText.text = _coinSliderTargetValue.ToString("#,0");
+            }
         }
     }
 
@@ -170,9 +243,14 @@ public class GameManager : MonoBehaviour
         pendulumMotor.force = pendulumForce;
     }
 
-    private void InitGame()
+    public void InitGame()
     {
         Application.targetFrameRate = 60;
+
+        SetCoin(initCoin);
+        SetStamina(initStamina);
+        SetBet(1);
+
         CreateBlock();
     }
 
@@ -190,6 +268,12 @@ public class GameManager : MonoBehaviour
             fixedJoint.connectedBody = link;
         }
         block.transform.SetPositionAndRotation(link.position, link.rotation);
+        var controller = block.GetComponent<BlockController>();
+        if (controller)
+        {
+            controller.bounceForce = hitBounceForce;
+            controller.maxBounceTimes = hitMaxBounceTimes;
+        }
         block.SetActive(true);
 
         activeBlock = block;
@@ -203,12 +287,21 @@ public class GameManager : MonoBehaviour
             if (lastBlock == null || target == lastBlock || simulated)
             {
                 // 完美特效
-                if (simulated && fxPerfectHit)
+                if (simulated)
                 {
-                    var fxGo = Instantiate(fxPerfectHit);
-                    fxGo.transform.position = activeBlock.transform.position + Vector3.back * 5f;
-                    fxGo.SetActive(true);
-                    this.Invoke(() => DestroyGameObject(fxGo), fxPerfectHitDuration);
+                    UIManager.instance.SetPopText("PERFECT");
+                    if (fxPerfectHit)
+                    {
+                        var fxGo = Instantiate(fxPerfectHit);
+                        fxGo.transform.position = activeBlock.transform.position + 5f * Vector3.back;
+                        fxGo.transform.localScale = fxPerfectHitScale;
+                        fxGo.SetActive(true);
+                        this.Invoke(() => DestroyGameObject(fxGo), fxPerfectHitDuration);
+                    }
+                }
+                else
+                {
+                    UIManager.instance.SetPopText("Good");
                 }
 
                 lastBlock = activeBlock;
@@ -221,11 +314,37 @@ public class GameManager : MonoBehaviour
                     // 复位
                     activeBlock.transform.DOKill();
                     activeBlock.transform.DOMove(new Vector3(0f, activeBlock.transform.position.y, activeBlock.transform.position.z), 0.3f);
+
+                    // 复位特效
+                    if (fxNormalHit)
+                    {
+                        var fxGo = Instantiate(fxNormalHit);
+                        fxGo.transform.position = activeBlock.transform.position + blockHeight * 0.5f * Vector3.down + 5f * Vector3.back;
+                        fxGo.SetActive(true);
+                        this.Invoke(() => DestroyGameObject(fxGo), fxNormalHitDuration);
+                    }
                 }
                 
                 // Slots
-                DoSlots(controller, () =>
+                DoSlots(controller, (slotIndex) =>
                 {
+                    // 奖励
+                    var multiplier = bet * slotMultiplier[slotIndex] * (simulated ? perfectMultiplier : 1f);
+                    var reward = baseReward * multiplier;
+                    SetCoin(coin + (long)reward);
+                    UIManager.instance.SetPopText($"x{multiplier}\n+{(long)reward:#,0}");
+
+                    // 特效
+                    if (fxCoinShower)
+                    {
+                        var fxGo = Instantiate(fxCoinShower);
+                        fxGo.transform.SetParent(hinge);
+                        fxGo.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+                        fxGo.transform.localScale = fxCoinShowerScale;
+                        fxGo.SetActive(true);
+                        this.Invoke(() => DestroyGameObject(fxGo), fxCoinShowerDuration);
+                    }
+
                     // 人物飞入
                     var leftChar = Instantiate(charPrefab);
                     leftChar.transform.SetParent(charContainer);
@@ -263,6 +382,7 @@ public class GameManager : MonoBehaviour
             // 失败
             else
             {
+                UIManager.instance.SetPopText("Failed");
                 Destroy(activeBlock);
                 activeBlock = null;
                 Invoke(nameof(CreateBlock), 0.1f);
@@ -304,7 +424,7 @@ public class GameManager : MonoBehaviour
             {
                 rt = Mathf.Abs(activeBlock.transform.position.x) / Mathf.Abs(rb.velocity.x);
                 var dt = Mathf.Abs(rt - t);
-                simulate = dt >= 0.32f && dt <= 0.38f;
+                simulate = Mathf.Abs(dt - 0.35f) <= hitPerfectThreshold;
             }
             if (simulate) controller.SimulatePerfectDrop(targetPos, t, lastBlock, onCollisionEnd);
         }
@@ -332,7 +452,7 @@ public class GameManager : MonoBehaviour
         curCam.Priority = VCAM_PRIORITY_LOW;
     }
 
-    private void DoSlots(BlockController block, Action onComplete = null)
+    private void DoSlots(BlockController block, Action<int> onComplete = null)
     {
         block.slotController.gameObject.SetActive(true);
         block.slotController.Reset();
@@ -342,5 +462,42 @@ public class GameManager : MonoBehaviour
     public void DestroyGameObject(GameObject go)
     {
         Destroy(go);
+    }
+
+    public void SetCoin(long value, float transTime = 1f)
+    {
+        if (transTime > 0f)
+        {
+            _coinSlider = true;
+            _coinSliderCurValue = coin;
+            _coinSliderTargetValue = value;
+            _coinSliderStartTime = Time.time;
+            _coinSliderDuration = transTime;
+            _coinSliderDeltaValue = (value - coin) / transTime;
+        }
+        else
+        {
+            UIManager.instance.coinText.text = value.ToString("#,0");
+        }
+        coin = value;
+    }
+
+    public void SetStamina(int value)
+    {
+        stamina = value;
+        UIManager.instance.staminaText.text = value.ToString();
+        UIManager.instance.dropButton.interactable = stamina > 0;
+    }
+
+    public void SetBet(int value)
+    {
+        if (value > stamina) value = stamina;
+        if (value <= 0)
+        {
+            UIManager.instance.betButton.interactable = false;
+            value = 1;
+        }
+        bet = value;
+        UIManager.instance.betText.text = $"BET x{value}";
     }
 }
