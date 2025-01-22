@@ -90,6 +90,7 @@ namespace ITHappy
         }
     }
 
+#if UNITY_EDITOR
     /// <summary>Custom Editor for our PrefabSwitch script, to allow us to perform actions
     /// from the editor.</summary>
     [CustomEditor(typeof(PrefabSwitch))]
@@ -120,4 +121,5 @@ namespace ITHappy
             }
         }
     }
+#endif
 }

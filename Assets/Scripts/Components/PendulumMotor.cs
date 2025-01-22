@@ -18,6 +18,11 @@ public class PendulumMotor : MonoBehaviour
     public float speed = 2.0f;
 
     /// <summary>
+    /// 驱动力
+    /// </summary>
+    public float force = 300f;
+
+    /// <summary>
     /// 当前速度
     /// </summary>
     public float velocity { get; private set; }

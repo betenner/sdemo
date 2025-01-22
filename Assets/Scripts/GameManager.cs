@@ -57,11 +57,11 @@ public class GameManager : MonoBehaviour
     [LabelText("挂点")]
     public Transform hinge;
 
+    [LabelText("挂点单摆驱动器")]
+    public PendulumMotor hingeMotor;
+
     [LabelText("绳子")]
     public Rigidbody rope;
-
-    [LabelText("绳子配重")]
-    public Rigidbody ropePayload;
 
     [LabelText("绳子挂点连接点")]
     public Transform ropeHingeConnector;
