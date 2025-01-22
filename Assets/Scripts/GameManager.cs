@@ -4,6 +4,7 @@ using Sirenix.OdinInspector;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using UnityEditor;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -80,6 +81,142 @@ public class GameManager : MonoBehaviour
 
     [LabelText("完美下落阈值 (越大越简单)"), Range(0.001f, 0.5f)]
     public float hitPerfectThreshold = 0.03f;
+
+    #endregion
+
+    #region Slot数值
+
+    #region 高速Slot
+
+    [Title("高速Slot数值")]
+    [LabelText("一阶段速度 (张/秒)"), Range(0.1f, 100f)]
+    public float hs_firstSpeed = 20f;
+
+    [LabelText("一阶段速度滚动张数"), Range(0, 100)]
+    public int hs_firstSpeedSlotCount = 20;
+
+    [LabelText("一阶段速度下的减速度 (张/秒^2)"), Range(0.1f, 100f)]
+    public float hs_firstDecSpeed = 20f;
+
+    [LabelText("二阶段速度 (张/秒)"), Range(0.1f, 100f)]
+    public float hs_secondSpeed = 15f;
+
+    [LabelText("二阶段速度滚动张速"), Range(0, 100)]
+    public int hs_secondSpeedSlotCount = 10;
+
+    [LabelText("二阶段速度下的减速度 (张/秒^2)"), Range(0.1f, 100f)]
+    public float hs_secondDecSpeed = 20f;
+
+    [LabelText("三阶段速度 (张/秒)"), Range(0.1f, 100f)]
+    public float hs_thirdSpeed = 10f;
+
+    [LabelText("三阶段速度滚动张速"), Range(0, 100)]
+    public int hs_thirdSpeedSlotCount = 5;
+
+    [LabelText("三阶段速度下的减速度 (张/秒^2)"), Range(0.1f, 100f)]
+    public float hs_thirdDecSpeed = 20f;
+
+    [LabelText("回弹速度 (张/秒)"), Range(0.1f, 100f)]
+    public float hs_reboundSpeed = 10f;
+
+    [LabelText("回弹偏移 (张数)")]
+    public float hs_reboundOffset = 0.5f;
+
+    [LabelText("启用回弹")]
+    public bool hs_rebound = false;
+
+    [LabelText("停止速度 (张/秒)"), Range(0.1f, 50f)]
+    public float hs_stopSpeed = 3f;
+
+    #endregion
+
+    #region 中速Slot
+
+    [Title("中速Slot数值")]
+    [LabelText("一阶段速度 (张/秒)"), Range(0.1f, 100f)]
+    public float ms_firstSpeed = 20f;
+
+    [LabelText("一阶段速度滚动张数"), Range(0, 100)]
+    public int ms_firstSpeedSlotCount = 20;
+
+    [LabelText("一阶段速度下的减速度 (张/秒^2)"), Range(0.1f, 100f)]
+    public float ms_firstDecSpeed = 20f;
+
+    [LabelText("二阶段速度 (张/秒)"), Range(0.1f, 100f)]
+    public float ms_secondSpeed = 15f;
+
+    [LabelText("二阶段速度滚动张速"), Range(0, 100)]
+    public int ms_secondSpeedSlotCount = 10;
+
+    [LabelText("二阶段速度下的减速度 (张/秒^2)"), Range(0.1f, 100f)]
+    public float ms_secondDecSpeed = 20f;
+
+    [LabelText("三阶段速度 (张/秒)"), Range(0.1f, 100f)]
+    public float ms_thirdSpeed = 10f;
+
+    [LabelText("三阶段速度滚动张速"), Range(0, 100)]
+    public int ms_thirdSpeedSlotCount = 5;
+
+    [LabelText("三阶段速度下的减速度 (张/秒^2)"), Range(0.1f, 100f)]
+    public float ms_thirdDecSpeed = 20f;
+
+    [LabelText("回弹速度 (张/秒)"), Range(0.1f, 100f)]
+    public float ms_reboundSpeed = 10f;
+
+    [LabelText("回弹偏移 (张数)")]
+    public float ms_reboundOffset = 0.5f;
+
+    [LabelText("启用回弹")]
+    public bool ms_rebound = false;
+
+    [LabelText("停止速度 (张/秒)"), Range(0.1f, 50f)]
+    public float ms_stopSpeed = 3f;
+
+    #endregion
+
+    #region 低速Slot
+
+    [Title("低速Slot数值")]
+    [LabelText("一阶段速度 (张/秒)"), Range(0.1f, 100f)]
+    public float ls_firstSpeed = 20f;
+
+    [LabelText("一阶段速度滚动张数"), Range(0, 100)]
+    public int ls_firstSpeedSlotCount = 20;
+
+    [LabelText("一阶段速度下的减速度 (张/秒^2)"), Range(0.1f, 100f)]
+    public float ls_firstDecSpeed = 20f;
+
+    [LabelText("二阶段速度 (张/秒)"), Range(0.1f, 100f)]
+    public float ls_secondSpeed = 15f;
+
+    [LabelText("二阶段速度滚动张速"), Range(0, 100)]
+    public int ls_secondSpeedSlotCount = 10;
+
+    [LabelText("二阶段速度下的减速度 (张/秒^2)"), Range(0.1f, 100f)]
+    public float ls_secondDecSpeed = 20f;
+
+    [LabelText("三阶段速度 (张/秒)"), Range(0.1f, 100f)]
+    public float ls_thirdSpeed = 10f;
+
+    [LabelText("三阶段速度滚动张速"), Range(0, 100)]
+    public int ls_thirdSpeedSlotCount = 5;
+
+    [LabelText("三阶段速度下的减速度 (张/秒^2)"), Range(0.1f, 100f)]
+    public float ls_thirdDecSpeed = 20f;
+
+    [LabelText("回弹速度 (张/秒)"), Range(0.1f, 100f)]
+    public float ls_reboundSpeed = 10f;
+
+    [LabelText("回弹偏移 (张数)")]
+    public float ls_reboundOffset = 0.5f;
+
+    [LabelText("启用回弹")]
+    public bool ls_rebound = false;
+
+    [LabelText("停止速度 (张/秒)"), Range(0.1f, 50f)]
+    public float ls_stopSpeed = 3f;
+
+    #endregion
 
     #endregion
 
@@ -309,6 +446,62 @@ public class GameManager : MonoBehaviour
                 activeBlock.transform.SetParent(deadBlocksContainer, true);
                 var controller = activeBlock.GetComponent<BlockController>();
 
+                // 随机分配Slot速度
+                var index = UnityEngine.Random.Range(0, 3);
+                switch (index)
+                {
+                    case 0:
+                        Debug.Log($"高速Slot");
+                        controller.slotController.firstDecSpeed = hs_firstDecSpeed;
+                        controller.slotController.firstSpeed = hs_firstSpeed;
+                        controller.slotController.firstSpeedSlotCount = hs_firstSpeedSlotCount;
+                        controller.slotController.secondDecSpeed = hs_secondDecSpeed;
+                        controller.slotController.secondSpeedSlotCount = hs_secondSpeedSlotCount;
+                        controller.slotController.secondSpeed = hs_secondSpeed;
+                        controller.slotController.thirdDecSpeed = hs_thirdDecSpeed;
+                        controller.slotController.thirdSpeedSlotCount = hs_thirdSpeedSlotCount;
+                        controller.slotController.thirdSpeed = hs_thirdSpeed;
+                        controller.slotController.rebound = hs_rebound;
+                        controller.slotController.reboundOffset = hs_reboundOffset;
+                        controller.slotController.reboundSpeed = hs_reboundSpeed;
+                        controller.slotController.stopSpeed = hs_stopSpeed;
+                        break;
+
+                    case 1:
+                        Debug.Log($"中速Slot");
+                        controller.slotController.firstDecSpeed = ms_firstDecSpeed;
+                        controller.slotController.firstSpeed = ms_firstSpeed;
+                        controller.slotController.firstSpeedSlotCount = ms_firstSpeedSlotCount;
+                        controller.slotController.secondDecSpeed = ms_secondDecSpeed;
+                        controller.slotController.secondSpeedSlotCount = ms_secondSpeedSlotCount;
+                        controller.slotController.secondSpeed = ms_secondSpeed;
+                        controller.slotController.thirdDecSpeed = ms_thirdDecSpeed;
+                        controller.slotController.thirdSpeedSlotCount = ms_thirdSpeedSlotCount;
+                        controller.slotController.thirdSpeed = ms_thirdSpeed;
+                        controller.slotController.rebound = ms_rebound;
+                        controller.slotController.reboundOffset = ms_reboundOffset;
+                        controller.slotController.reboundSpeed = ms_reboundSpeed;
+                        controller.slotController.stopSpeed = ms_stopSpeed;
+                        break;
+
+                    default:
+                        Debug.Log($"低速Slot");
+                        controller.slotController.firstDecSpeed = ls_firstDecSpeed;
+                        controller.slotController.firstSpeed = ls_firstSpeed;
+                        controller.slotController.firstSpeedSlotCount = ls_firstSpeedSlotCount;
+                        controller.slotController.secondDecSpeed = ls_secondDecSpeed;
+                        controller.slotController.secondSpeedSlotCount = ls_secondSpeedSlotCount;
+                        controller.slotController.secondSpeed = ls_secondSpeed;
+                        controller.slotController.thirdDecSpeed = ls_thirdDecSpeed;
+                        controller.slotController.thirdSpeedSlotCount = ls_thirdSpeedSlotCount;
+                        controller.slotController.thirdSpeed = ls_thirdSpeed;
+                        controller.slotController.rebound = ls_rebound;
+                        controller.slotController.reboundOffset = ls_reboundOffset;
+                        controller.slotController.reboundSpeed = ls_reboundSpeed;
+                        controller.slotController.stopSpeed = ls_stopSpeed;
+                        break;
+                }
+
                 if (!simulated)
                 {
                     // 复位
@@ -332,7 +525,7 @@ public class GameManager : MonoBehaviour
                     var multiplier = bet * slotMultiplier[slotIndex] * (simulated ? perfectMultiplier : 1f);
                     var reward = baseReward * multiplier;
                     SetCoin(coin + (long)reward);
-                    UIManager.instance.SetPopText($"x{multiplier}\n+{(long)reward:#,0}");
+                    UIManager.instance.SetPopText($"+{(long)reward:#,0}");
 
                     // 特效
                     if (fxCoinShower)

@@ -1920,6 +1920,45 @@ MonoBehaviour:
   hitBounceForce: 0.3
   hitMaxBounceTimes: 1
   hitPerfectThreshold: 0.05
+  hs_firstSpeed: 20
+  hs_firstSpeedSlotCount: 0
+  hs_firstDecSpeed: 0.1
+  hs_secondSpeed: 20
+  hs_secondSpeedSlotCount: 1
+  hs_secondDecSpeed: 0.1
+  hs_thirdSpeed: 20
+  hs_thirdSpeedSlotCount: 10
+  hs_thirdDecSpeed: 20
+  hs_reboundSpeed: 10
+  hs_reboundOffset: 0.5
+  hs_rebound: 0
+  hs_stopSpeed: 10
+  ms_firstSpeed: 20
+  ms_firstSpeedSlotCount: 5
+  ms_firstDecSpeed: 20
+  ms_secondSpeed: 10
+  ms_secondSpeedSlotCount: 5
+  ms_secondDecSpeed: 20
+  ms_thirdSpeed: 5
+  ms_thirdSpeedSlotCount: 5
+  ms_thirdDecSpeed: 20
+  ms_reboundSpeed: 10
+  ms_reboundOffset: 0.5
+  ms_rebound: 0
+  ms_stopSpeed: 1
+  ls_firstSpeed: 20
+  ls_firstSpeedSlotCount: 5
+  ls_firstDecSpeed: 20
+  ls_secondSpeed: 10
+  ls_secondSpeedSlotCount: 5
+  ls_secondDecSpeed: 20
+  ls_thirdSpeed: 5
+  ls_thirdSpeedSlotCount: 3
+  ls_thirdDecSpeed: 20
+  ls_reboundSpeed: 10
+  ls_reboundOffset: 0.9
+  ls_rebound: 1
+  ls_stopSpeed: 1
   fxNormalHit: {fileID: 180820, guid: a07608802ac497743a7f19f6633fdd70, type: 3}
   fxNormalHitDuration: 1
   fxNormalHitScale: {x: 1, y: 1, z: 1}
