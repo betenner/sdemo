@@ -34,58 +34,58 @@ public class GameManager : MonoBehaviour
     //[LabelText("初始水平速度"), Range(-100f, 100f)]
     //public float initSpeed = -10f;
 
-    //[Title("相机")]
-    [LabelText("游戏相机"), HideInInspector]
+    [Title("相机")]
+    [LabelText("游戏相机"),]
     public Camera gameCamera;
 
-    [LabelText("机位1"), HideInInspector]
+    [LabelText("机位1"),]
     public CinemachineVirtualCamera vCam1;
 
-    [LabelText("相机1目标"), HideInInspector]
+    [LabelText("相机1目标"),]
     public Transform vcamTarget1;
 
-    [LabelText("机位2"), HideInInspector]
+    [LabelText("机位2"),]
     public CinemachineVirtualCamera vCam2;
 
-    [LabelText("相机2目标"), HideInInspector]
+    [LabelText("相机2目标"),]
     public Transform vcamTarget2;
 
-    //[Title("引用")]
-    [LabelText("地面"), HideInInspector]
+    [Title("引用")]
+    [LabelText("地面")]
     public GameObject ground;
 
-    [LabelText("挂点"), HideInInspector]
+    [LabelText("挂点")]
     public Transform hinge;
 
-    [LabelText("绳子"), HideInInspector]
+    [LabelText("绳子")]
     public Rigidbody rope;
 
-    [LabelText("绳子配重"), HideInInspector]
+    [LabelText("绳子配重")]
     public Rigidbody ropePayload;
 
-    [LabelText("绳子挂点连接点"), HideInInspector]
+    [LabelText("绳子挂点连接点")]
     public Transform ropeHingeConnector;
 
-    [LabelText("绳子末端连接点"), HideInInspector]
+    [LabelText("绳子末端连接点")]
     public Transform ropeEndConnector;
 
-    [LabelText("连接"), HideInInspector]
+    [LabelText("连接")]
     public Rigidbody link;
 
-    [LabelText("楼层预制体"), HideInInspector]
+    [LabelText("楼层预制体")]
     public GameObject blockPrefab;
 
-    [LabelText("人物预制体"), HideInInspector]
+    [LabelText("人物预制体")]
     public GameObject charPrefab;
 
-    //[Title("容器")]
-    [LabelText("活动楼层容器"), HideInInspector]
+    [Title("容器")]
+    [LabelText("活动楼层容器")]
     public Transform activeBlockContainer;
 
-    [LabelText("已下落楼层容器"), HideInInspector]
+    [LabelText("已下落楼层容器")]
     public Transform deadBlocksContainer;
 
-    [LabelText("人物容器"), HideInInspector]
+    [LabelText("人物容器")]
     public Transform charContainer;
 
     public GameObject activeBlock { get; private set; } = null;
