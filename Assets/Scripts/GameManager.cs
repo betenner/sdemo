@@ -17,7 +17,8 @@ public class GameManager : MonoBehaviour
     private static GameManager _instance;
     public static GameManager instance => _instance;
 
-    [Title("数值")]
+    #region 全局数值
+    [Title("全局数值")]
     [LabelText("重力"), Range(0.01f, 500f)]
     public float gravity = 50f;
     private float _lastGravity = 0f;
@@ -30,10 +31,38 @@ public class GameManager : MonoBehaviour
 
     [LabelText("楼层高度"), Range(0.1f, 10f)]
     public float blockHeight = 3.4f;
+    #endregion
 
-    //[LabelText("初始水平速度"), Range(-100f, 100f)]
-    //public float initSpeed = -10f;
+    #region 单摆数值
+    [Title("单摆数值")]
+    [LabelText("最大摆角 (度数)"), Range(1f, 179f), OnValueChanged("SetupPendulum")]
+    public float pendulumMaxAngle = 30f;
 
+    [LabelText("摆动速率"), OnValueChanged("SetupPendulum")]
+    public float pendulumSpeed = 2f;
+
+    [LabelText("摆动力量"), OnValueChanged("SetupPendulum")]
+    public float pendulumForce = 300f;
+    #endregion
+
+    #region 特效
+
+    [Title("特效")]
+    [LabelText("楼层碰撞特效")]
+    public GameObject fxNormalHit;
+
+    [LabelText("楼层碰撞特效持续时间 (秒)"), Range(0.1f, 10f)]
+    public float fxNormalHitDuration = 0.5f;
+
+    [LabelText("楼层完美吸附特效")]
+    public GameObject fxPerfectHit;
+
+    [LabelText("楼层完美吸附特效时间 (秒)"), Range(0.1f, 10f)]
+    public float fxPerfectHitDuration = 0.5f;
+
+    #endregion
+
+    #region 相机
     [Title("相机")]
     [LabelText("游戏相机"),]
     public Camera gameCamera;
@@ -49,7 +78,9 @@ public class GameManager : MonoBehaviour
 
     [LabelText("相机2目标"),]
     public Transform vcamTarget2;
+    #endregion
 
+    #region 引用
     [Title("引用")]
     [LabelText("地面")]
     public GameObject ground;
@@ -58,7 +89,7 @@ public class GameManager : MonoBehaviour
     public Transform hinge;
 
     [LabelText("挂点单摆驱动器")]
-    public PendulumMotor hingeMotor;
+    public PendulumMotor pendulumMotor;
 
     [LabelText("绳子")]
     public Rigidbody rope;
@@ -77,7 +108,9 @@ public class GameManager : MonoBehaviour
 
     [LabelText("人物预制体")]
     public GameObject charPrefab;
+    #endregion
 
+    #region 容器
     [Title("容器")]
     [LabelText("活动楼层容器")]
     public Transform activeBlockContainer;
@@ -87,6 +120,8 @@ public class GameManager : MonoBehaviour
 
     [LabelText("人物容器")]
     public Transform charContainer;
+
+    #endregion
 
     public GameObject activeBlock { get; private set; } = null;
 
@@ -127,8 +162,17 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void SetupPendulum()
+    {
+        if (!pendulumMotor) return;
+        pendulumMotor.maxAngle = pendulumMaxAngle;
+        pendulumMotor.speed = pendulumSpeed;
+        pendulumMotor.force = pendulumForce;
+    }
+
     private void InitGame()
     {
+        Application.targetFrameRate = 60;
         CreateBlock();
     }
 
@@ -158,6 +202,15 @@ public class GameManager : MonoBehaviour
             // 成功
             if (lastBlock == null || target == lastBlock || simulated)
             {
+                // 完美特效
+                if (simulated && fxPerfectHit)
+                {
+                    var fxGo = Instantiate(fxPerfectHit);
+                    fxGo.transform.position = activeBlock.transform.position + Vector3.back * 5f;
+                    fxGo.SetActive(true);
+                    this.Invoke(() => DestroyGameObject(fxGo), fxPerfectHitDuration);
+                }
+
                 lastBlock = activeBlock;
                 deadBlocks.Add(activeBlock);
                 activeBlock.transform.SetParent(deadBlocksContainer, true);
@@ -284,5 +337,10 @@ public class GameManager : MonoBehaviour
         block.slotController.gameObject.SetActive(true);
         block.slotController.Reset();
         block.slotController.StartRolling(onComplete);
+    }
+
+    public void DestroyGameObject(GameObject go)
+    {
+        Destroy(go);
     }
 }

@@ -22,16 +22,16 @@ public class SlotController : MonoBehaviour
     [LabelText("每张大小 (像素)")]
     public Vector2Int slotSize;
 
-    [LabelText("初始速度 (张/秒)"), Range(0.1f, 50f)]
+    [LabelText("初始速度 (张/秒)"), Range(0.1f, 60f)]
     public float initSpeed = 20f;
 
     [LabelText("初始滚动张数 (匀速)"), Range(1, 50)]
     public int initSlotCount = 20;
 
-    [LabelText("减速度 (张/秒^2)"), Range(0.1f, 10f)]
+    [LabelText("减速度 (张/秒^2)"), Range(0.1f, 50f)]
     public float decSpeed = 20f;
 
-    [LabelText("停止速度 (张/秒)"), Range(0.1f, 10f)]
+    [LabelText("停止速度 (张/秒)"), Range(0.1f, 50f)]
     public float stopSpeed = 3f;
 
     private Sprite GetRandomSlot()

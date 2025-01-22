@@ -1752,6 +1752,13 @@ MonoBehaviour:
   ropeLength: 16.9
   ropeEndY: 5
   blockHeight: 3.4
+  pendulumMaxAngle: 30
+  pendulumSpeed: 2
+  pendulumForce: 300
+  fxNormalHit: {fileID: 180820, guid: a07608802ac497743a7f19f6633fdd70, type: 3}
+  fxNormalHitDuration: 0.5
+  fxPerfectHit: {fileID: 129898, guid: 36bdc02b23d9ca94d93bd715c0cca5c0, type: 3}
+  fxPerfectHitDuration: 0.5
   gameCamera: {fileID: 330585545}
   vCam1: {fileID: 1285039933}
   vcamTarget1: {fileID: 1009440054}
@@ -1759,7 +1766,7 @@ MonoBehaviour:
   vcamTarget2: {fileID: 145482384}
   ground: {fileID: 1010359677}
   hinge: {fileID: 794235167}
-  hingeMotor: {fileID: 710272631}
+  pendulumMotor: {fileID: 710272631}
   rope: {fileID: 710272629}
   ropeHingeConnector: {fileID: 408304039}
   ropeEndConnector: {fileID: 627664784}

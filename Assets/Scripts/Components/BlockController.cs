@@ -78,6 +78,15 @@ public class BlockController : MonoBehaviour
         }
         _lastCollideObject = collision.gameObject;
         _waitForCollisionEnd = true;
+
+        // 碰触特效
+        if (GameManager.instance.fxNormalHit)
+        {
+            var fxGo = Instantiate(GameManager.instance.fxNormalHit);
+            fxGo.transform.position = collision.contacts[0].point + Vector3.back * 5f;
+            fxGo.SetActive(true);
+            this.Invoke(() => GameManager.instance.DestroyGameObject(fxGo), GameManager.instance.fxNormalHitDuration);
+        }
     }
 
     public void SimulatePerfectDrop(Vector3 targetPos, float t, GameObject lastBlock, Action<GameObject, bool> onFinish)
