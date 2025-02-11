@@ -579,7 +579,8 @@ public class GameManager : MonoBehaviour
                     RaiseRope();
                     activeBlock = null;
                     Invoke(nameof(CreateBlock), 0.1f);
-                    UIManager.instance.dropButton.interactable = true;
+                    //UIManager.instance.dropButton.interactable = true;
+                    UIManager.instance.dropButton.interactable = stamina > 0;
                 });
             }
 
@@ -590,7 +591,8 @@ public class GameManager : MonoBehaviour
                 Destroy(activeBlock);
                 activeBlock = null;
                 Invoke(nameof(CreateBlock), 0.1f);
-                UIManager.instance.dropButton.interactable = true;
+                //UIManager.instance.dropButton.interactable = true;
+                UIManager.instance.dropButton.interactable = stamina > 0;
             }
         }
 

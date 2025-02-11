@@ -100,6 +100,16 @@ public class BlockController : MonoBehaviour
             this.Invoke(() => GameManager.instance.DestroyGameObject(fxGo), GameManager.instance.fxNormalHitDuration);
         }
 
+        // 音效
+        if (collision.gameObject == GameManager.instance.ground)
+        {
+            SoundManager.instance.firstDrop.Play();
+        }
+        else
+        {
+            SoundManager.instance.stack.Play();
+        }
+
         // 反弹处理
         if (_bounceTimes < maxBounceTimes)
         {

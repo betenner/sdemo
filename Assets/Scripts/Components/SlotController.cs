@@ -100,7 +100,7 @@ public class SlotController : MonoBehaviour
     public void Reset()
     {
         _rolling = false;
-        SoundManager.instance.slot.Stop();
+        //SoundManager.instance.slot.Stop();
         _offset = 0f;
         _curSlot = slot1;
         _curSlot.sprite = GetRandomSlot(out _curSlotIndex);
@@ -136,7 +136,7 @@ public class SlotController : MonoBehaviour
     {
         _onStop = onStop;
         _rolling = true;
-        SoundManager.instance.slot.Play();
+        //SoundManager.instance.slot.Play();
     }
 
     private void DetermineSpeed()
@@ -225,6 +225,7 @@ public class SlotController : MonoBehaviour
             // 切换Slot
             else if (_offset <= -UPP * slotSize.y)
             {
+                SoundManager.instance.slotClick.Play();
                 _curSlot = GetNextSlot(_curSlot, out _curSlotIndex);
                 _up1Slot = GetNextSlot(_up1Slot, out _up1SlotIndex);
                 _up2Slot = GetNextSlot(_up2Slot, out _up2SlotIndex);
@@ -253,7 +254,7 @@ public class SlotController : MonoBehaviour
                 if (_stopping)
                 {
                     _rolling = false;
-                    SoundManager.instance.slot.Stop();
+                    //SoundManager.instance.slot.Stop();
                     _up1Slot.gameObject.SetActive(false);
                     _up2Slot.gameObject.SetActive(false);
                     _curSlot.sortingOrder = 100;
@@ -269,7 +270,7 @@ public class SlotController : MonoBehaviour
             if (_offset >= 0)
             {
                 _rolling = false;
-                SoundManager.instance.slot.Stop();
+                //SoundManager.instance.slot.Stop();
                 _up1Slot.gameObject.SetActive(false);
                 _up2Slot.gameObject.SetActive(false);
                 _curSlot.sortingOrder = 100;

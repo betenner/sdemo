@@ -28,6 +28,15 @@ public class SoundManager : MonoBehaviour
     [LabelText("获得金币音效")]
     public AudioSource coin;
 
+    [LabelText("首次落地音效")]
+    public AudioSource firstDrop;
+
+    [LabelText("后续堆叠音效")]
+    public AudioSource stack;
+
+    [LabelText("Slot单次音效")]
+    public AudioSource slotClick;
+
     private void Awake()
     {
         instance = this;
