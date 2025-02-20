@@ -9,6 +9,8 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    private const float VCAM_BLEND_TIME_SLOW = 2f;
+    private const float VCAM_BLEND_TIME_FAST = 0.3f;
     private const int VCAM_PRIORITY_HIGH = 10;
     private const int VCAM_PRIORITY_MIDDLE = 7;
     private const int VCAM_PRIORITY_LOW = 5;
@@ -16,6 +18,8 @@ public class GameManager : MonoBehaviour
 
     private static GameManager _instance;
     public static GameManager instance => _instance;
+
+    public int level { get; private set; }
 
     #region 全局数值
     [Title("全局数值")]
@@ -40,11 +44,11 @@ public class GameManager : MonoBehaviour
     public int stamina { get; private set; }
 
     [LabelText("初始金币"), Min(1000)]
-    public long initCoin = 1000000L;
-    public long coin { get; private set; }
+    public int initCoin = 1000000;
+    public int coin { get; private set; }
 
     [LabelText("基础奖励"), Min(1L)]
-    public long baseReward = 1000L;
+    public int baseReward = 1000;
 
     [LabelText("完美下落额外倍率")]
     public float perfectMultiplier = 10f;
@@ -255,7 +259,9 @@ public class GameManager : MonoBehaviour
     #region 相机
     [Title("相机")]
     [LabelText("游戏相机"),]
-    public Camera gameCamera;
+    public Camera mainCamera;
+
+    private CinemachineBrain _vCamController;
 
     [LabelText("机位1"),]
     public CinemachineVirtualCamera vCam1;
@@ -268,6 +274,9 @@ public class GameManager : MonoBehaviour
 
     [LabelText("相机2目标"),]
     public Transform vcamTarget2;
+
+    [LabelText("城建相机")]
+    public CinemachineVirtualCamera vCamBuild;
     #endregion
 
     #region 引用
@@ -298,6 +307,9 @@ public class GameManager : MonoBehaviour
 
     [LabelText("人物预制体")]
     public GameObject charPrefab;
+
+    [LabelText("建筑列表")]
+    public BuildCard[] buildingList;
     #endregion
 
     #region 容器
@@ -329,6 +341,7 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         _instance = this;
+        _vCamController = mainCamera.GetComponent<CinemachineBrain>();
     }
 
     void Update()
@@ -384,9 +397,13 @@ public class GameManager : MonoBehaviour
     {
         Application.targetFrameRate = 60;
 
-        SetCoin(initCoin);
-        SetStamina(initStamina);
-        SetBet(1);
+        SaveDataManager.Load();
+
+        SetCameraBlendTime(VCAM_BLEND_TIME_SLOW);
+
+        //SetCoin(initCoin);
+        //SetStamina(initStamina);
+        //SetBet(1);
 
         CreateBlock();
     }
@@ -526,7 +543,7 @@ public class GameManager : MonoBehaviour
                     // 奖励
                     var multiplier = bet * slotMultiplier[slotIndex] * (simulated ? perfectMultiplier : 1f);
                     var reward = baseReward * multiplier;
-                    SetCoin(coin + (long)reward);
+                    SetCoin(coin + (int)reward);
                     SoundManager.instance.coin.Play();
                     if (slotIndex < 2)
                     {
@@ -579,8 +596,9 @@ public class GameManager : MonoBehaviour
                     RaiseRope();
                     activeBlock = null;
                     Invoke(nameof(CreateBlock), 0.1f);
+                    UIManager.instance.EnableButtons();
                     //UIManager.instance.dropButton.interactable = true;
-                    UIManager.instance.dropButton.interactable = stamina > 0;
+                    //UIManager.instance.dropButton.interactable = stamina > 0;
                 });
             }
 
@@ -591,8 +609,9 @@ public class GameManager : MonoBehaviour
                 Destroy(activeBlock);
                 activeBlock = null;
                 Invoke(nameof(CreateBlock), 0.1f);
+                UIManager.instance.EnableButtons();
                 //UIManager.instance.dropButton.interactable = true;
-                UIManager.instance.dropButton.interactable = stamina > 0;
+                //UIManager.instance.dropButton.interactable = stamina > 0;
             }
         }
 
@@ -607,7 +626,8 @@ public class GameManager : MonoBehaviour
             {
                 Destroy(fixedJoint);
             }
-            UIManager.instance.dropButton.interactable = false;
+            UIManager.instance.DisableButtons();
+            //UIManager.instance.dropButton.interactable = false;
 
             // 判定是否模拟完美
             Vector3 targetPos;
@@ -642,6 +662,15 @@ public class GameManager : MonoBehaviour
         SmoothMoveCamera(GetCurVCamTarget().position + Vector3.up * blockHeight);
     }
 
+    public void SetCameraBlendTime(float duration = 2f)
+    {
+        if (!_vCamController) return;
+        //var blend = _vCamController.m_DefaultBlend;
+        //blend.BlendTime = duration;
+        //_vCamController.m_DefaultBlend = blend;
+        _vCamController.m_DefaultBlend = new CinemachineBlendDefinition(CinemachineBlendDefinition.Style.Linear, duration);
+    }
+
     private Transform GetCurVCamTarget()
     {
         return vCam1.Priority > vCam2.Priority ? vcamTarget1 : vcamTarget2;
@@ -670,7 +699,7 @@ public class GameManager : MonoBehaviour
         Destroy(go);
     }
 
-    public void SetCoin(long value, float transTime = 1f)
+    public void SetCoin(int value, float transTime = 1f)
     {
         if (transTime > 0f)
         {
@@ -686,13 +715,17 @@ public class GameManager : MonoBehaviour
             UIManager.instance.coinText.text = value.ToString("#,0");
         }
         coin = value;
+        SaveDataManager.SaveCoin();
     }
 
     public void SetStamina(int value)
     {
         stamina = value;
         UIManager.instance.staminaText.text = value.ToString();
-        UIManager.instance.dropButton.interactable = stamina > 0;
+        //UIManager.instance.dropButton.interactable = true;
+        //UIManager.instance.dropButton.interactable = stamina > 0;
+        //UIManager.instance.betButton.interactable = stamina > 0;
+        SaveDataManager.SaveStamina();
     }
 
     public void SetBet(int value)
@@ -705,5 +738,44 @@ public class GameManager : MonoBehaviour
         }
         bet = value;
         UIManager.instance.betText.text = $"BET x{value}";
+        SaveDataManager.SaveBet();
+    }
+
+    /// <summary>
+    /// 切换到城建
+    /// </summary>
+    public void SwitchToBuild()
+    {
+        SetCameraBlendTime(VCAM_BLEND_TIME_FAST);
+        if (vCamBuild) vCamBuild.enabled = true;
+    }
+
+    /// <summary>
+    /// 切换到盖楼
+    /// </summary>
+    public void SwitchToBlock()
+    {
+        SetCameraBlendTime(VCAM_BLEND_TIME_FAST);
+        if (vCamBuild) vCamBuild.enabled = false;
+        this.Invoke(() =>
+        {
+            SetCameraBlendTime(VCAM_BLEND_TIME_SLOW);
+        }, VCAM_BLEND_TIME_FAST);
+    }
+
+    /// <summary>
+    /// 更新等级
+    /// </summary>
+    public void UpdateLevel()
+    {
+        int level = 0;
+        if (buildingList != null)
+        {
+            foreach (var item in buildingList)
+            {
+                level += item.level;
+            }
+        }
+        UIManager.instance.lvText.text = level.ToString();
     }
 }

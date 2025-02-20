@@ -13,11 +13,23 @@ public class UIManager : MonoBehaviour
     [LabelText("UI相机")]
     public Camera uiCamera;
 
+    [LabelText("盖楼界面")]
+    public GameObject blockUI;
+
+    [LabelText("城建界面")]
+    public GameObject buildUI;
+
+    [LabelText("城建按钮")]
+    public Button buildButton;
+
     [LabelText("下落按钮")]
     public Button dropButton;
 
     [LabelText("倍率按钮")]
     public Button betButton;
+
+    [LabelText("主等级文本")]
+    public TextMeshProUGUI lvText;
 
     [LabelText("金币文本")]
     public TextMeshProUGUI coinText;
@@ -30,6 +42,18 @@ public class UIManager : MonoBehaviour
 
     [LabelText("弹出文本")]
     public TextMeshProUGUI popText;
+
+    [LabelText("购买体力面板")]
+    public GameObject buyStaminaPanel;
+
+    [LabelText("购买体力按钮")]
+    public Button buyStaminaButton;
+
+    [LabelText("购买体力数量文本")]
+    public TextMeshProUGUI buyStaminaAmount;
+
+    [LabelText("城建返回按钮")]
+    public Button buildBackButton;
 
     private void Awake()
     {
@@ -48,16 +72,28 @@ public class UIManager : MonoBehaviour
     {
         dropButton.onClick.AddListener(OnDropButtonClick);
         betButton.onClick.AddListener(OnBetButtonClick);
+        buyStaminaButton.onClick.AddListener(OnBuyStaminaButtonClick);
+        buildButton.onClick.AddListener(OnBuildButtonClick);
+        buildBackButton.onClick.AddListener(OnBuildBackButtonClick);
     }
 
     public void RemoveEventListeners()
     {
         dropButton.onClick.RemoveAllListeners();
         betButton.onClick.RemoveAllListeners();
+        buyStaminaButton.onClick.RemoveAllListeners();
+        buildButton.onClick.RemoveAllListeners();
+        buildBackButton.onClick.RemoveAllListeners();
     }
 
     public void OnDropButtonClick()
     {
+        if (GameManager.instance.stamina <= 0)
+        {
+            buyStaminaAmount.text = $"x {GameManager.instance.initStamina}";
+            buyStaminaPanel.SetActive(true);
+            return;
+        }
         GameManager.instance.SetStamina(GameManager.instance.stamina - GameManager.instance.bet);
         GameManager.instance.SetBet(GameManager.instance.bet);
         GameManager.instance.DropActiveBlock();
@@ -94,5 +130,55 @@ public class UIManager : MonoBehaviour
                 popText.transform.DOScale(0.3f * Vector3.one, 0.2f);
             });
         });
+    }
+
+    public void OnBuyStaminaButtonClick()
+    {
+        GameManager.instance.SetStamina(GameManager.instance.stamina + GameManager.instance.initStamina);
+        buyStaminaPanel.SetActive(false);
+    }
+
+    public void OnBuildButtonClick()
+    {
+        GameManager.instance.SwitchToBuild();
+        SwitchToBuildUI();
+    }
+
+    public void OnBuildBackButtonClick()
+    {
+        GameManager.instance.SwitchToBlock();
+        SwitchToBlockUI();
+    }
+
+    public void DisableButtons()
+    {
+        dropButton.interactable = false;
+        betButton.interactable = false;
+        buildButton.interactable = false;
+    }
+
+    public void EnableButtons()
+    {
+        dropButton.interactable = true;
+        betButton.interactable = GameManager.instance.stamina > 0;
+        buildButton.interactable = true;
+    }
+
+    /// <summary>
+    /// 切换到城建UI
+    /// </summary>
+    public void SwitchToBuildUI()
+    {
+        blockUI.SetActive(false);
+        buildUI.SetActive(true);
+    }
+
+    /// <summary>
+    /// 切换到盖楼UI
+    /// </summary>
+    public void SwitchToBlockUI()
+    {
+        blockUI.SetActive(true);
+        buildUI.SetActive(false);
     }
 }
