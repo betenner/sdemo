@@ -59,6 +59,8 @@ public class BuildCard : MonoBehaviour
 
     private Button _button;
 
+    public long cost { get; private set; }
+
     private void Awake()
     {
         _button = GetComponent<Button>();
@@ -89,13 +91,16 @@ public class BuildCard : MonoBehaviour
         }
         maxNode.SetActive(false);
         buyNode.SetActive(true);
-        long cost = 1L;
+        cost = 1L;
         if (levelCost != null && levelCost.Length > level)
         {
             cost = levelCost[level];
         }
         costText.text = Utils.ConvertToKMBT(cost);
-        costText.color = GameManager.instance.coin >= cost ? COLOR_DARK_GREEN : COLOR_DARK_RED;
+        if (Application.isPlaying)
+        {
+            costText.color = GameManager.instance.coin >= cost ? COLOR_DARK_GREEN : COLOR_DARK_RED;
+        }
     }
 
     public void UpdateScale()
@@ -124,10 +129,15 @@ public class BuildCard : MonoBehaviour
         {
             levelNodes[i].gameObject.SetActive(i < maxLevel);
             levelNodes[i].on = i < level;
+            levelNodes[i].UpdateState();
         }
-        GameManager.instance.UpdateLevel();
+        if (Application.isPlaying)
+        {
+            GameManager.instance.UpdateLevel();
+        }
         UpdateCost();
         UpdateScale();
+        UpdateButton();
         _updatingLevel = false;
     }
 
@@ -145,6 +155,5 @@ public class BuildCard : MonoBehaviour
     {
         UpdateLevel();
         UpdateName();
-        UpdateButton();
     }
 }

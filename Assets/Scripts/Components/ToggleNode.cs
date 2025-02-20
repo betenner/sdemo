@@ -8,7 +8,7 @@ using UnityEngine;
 
 public class ToggleNode : MonoBehaviour
 {
-    [LabelText("开"), OnValueChanged("OnChange")]
+    [LabelText("开"), OnValueChanged("UpdateState")]
     public bool on;
 
     [LabelText("开时激活列表")]
@@ -19,10 +19,10 @@ public class ToggleNode : MonoBehaviour
 
     private void OnEnable()
     {
-        OnChange();
+        UpdateState();
     }
 
-    private void OnChange()
+    public void UpdateState()
     {
         foreach(var item in onList)
         {

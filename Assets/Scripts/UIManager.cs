@@ -52,6 +52,15 @@ public class UIManager : MonoBehaviour
     [LabelText("购买体力数量文本")]
     public TextMeshProUGUI buyStaminaAmount;
 
+    [LabelText("购买金币面板")]
+    public GameObject buyCoinPanel;
+
+    [LabelText("购买金币按钮")]
+    public Button buyCoinButton;
+
+    [LabelText("购买金币数量文本")]
+    public TextMeshProUGUI buyCoinAmount;
+
     [LabelText("城建返回按钮")]
     public Button buildBackButton;
 
@@ -73,6 +82,7 @@ public class UIManager : MonoBehaviour
         dropButton.onClick.AddListener(OnDropButtonClick);
         betButton.onClick.AddListener(OnBetButtonClick);
         buyStaminaButton.onClick.AddListener(OnBuyStaminaButtonClick);
+        buyCoinButton.onClick.AddListener(OnBuyCoinButtonClick);
         buildButton.onClick.AddListener(OnBuildButtonClick);
         buildBackButton.onClick.AddListener(OnBuildBackButtonClick);
     }
@@ -82,6 +92,7 @@ public class UIManager : MonoBehaviour
         dropButton.onClick.RemoveAllListeners();
         betButton.onClick.RemoveAllListeners();
         buyStaminaButton.onClick.RemoveAllListeners();
+        buyCoinButton.onClick.RemoveAllListeners();
         buildButton.onClick.RemoveAllListeners();
         buildBackButton.onClick.RemoveAllListeners();
     }
@@ -136,6 +147,12 @@ public class UIManager : MonoBehaviour
     {
         GameManager.instance.SetStamina(GameManager.instance.stamina + GameManager.instance.initStamina);
         buyStaminaPanel.SetActive(false);
+    }
+
+    public void OnBuyCoinButtonClick()
+    {
+        GameManager.instance.SetCoin(GameManager.instance.coin + GameManager.instance.initCoin);
+        buyCoinPanel.SetActive(false);
     }
 
     public void OnBuildButtonClick()

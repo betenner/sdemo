@@ -21,7 +21,11 @@ public static class SaveDataManager
     public static void Load()
     {
         GameManager.instance.SetStamina(PlayerPrefs.GetInt(KEY_STAMINA, GameManager.instance.initStamina));
-        GameManager.instance.SetCoin(PlayerPrefs.GetInt(KEY_COIN, GameManager.instance.initCoin));
+        var coinStr = PlayerPrefs.GetString(KEY_COIN, GameManager.instance.initCoin.ToString());
+        if (long.TryParse(coinStr, out var coin))
+        {
+            GameManager.instance.SetCoin(coin);
+        }
         GameManager.instance.SetBet(PlayerPrefs.GetInt(KEY_BET, 1));
 
         if (GameManager.instance.buildingList != null)
@@ -31,7 +35,6 @@ public static class SaveDataManager
                 if (building != null)
                 {
                     building.level = PlayerPrefs.GetInt(string.Format(KEY_BUILD_LEVEL, building.id), 0);
-                    building.UpdateInfo();
                 }
             }
         }
@@ -45,7 +48,7 @@ public static class SaveDataManager
 
     public static void SaveCoin(bool flush = true)
     {
-        PlayerPrefs.SetInt(KEY_COIN, GameManager.instance.coin);
+        PlayerPrefs.SetString(KEY_COIN, GameManager.instance.coin.ToString());
         if (flush) PlayerPrefs.Save();
     }
 
