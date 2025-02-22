@@ -3801,8 +3801,8 @@ Transform:
   m_GameObject: {fileID: 710272624}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 13.45, z: 0}
-  m_LocalScale: {x: 0.05, y: 8.45, z: 0.05}
+  m_LocalPosition: {x: 0, y: 13, z: 0}
+  m_LocalScale: {x: 0.05, y: 7.5, z: 0.05}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 408304039}
@@ -3938,8 +3938,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8329ce42699449e40aec2e3779dcec81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxAngle: 30
-  speed: 2
+  maxAngle: 25
+  speed: 1.9
   force: 300
 --- !u!1001 &729625039
 PrefabInstance:
@@ -4146,8 +4146,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gravity: 50
-  ropeLength: 16.9
-  ropeEndY: 5
+  ropeLength: 15
+  ropeEndY: 5.5
   blockHeight: 3.4
   initStamina: 100
   initCoin: 1000000
@@ -4165,12 +4165,12 @@ MonoBehaviour:
   - {fileID: 2066597500}
   - {fileID: 1058719073}
   - {fileID: 658195378}
-  pendulumMaxAngle: 30
-  pendulumSpeed: 2
+  pendulumMaxAngle: 25
+  pendulumSpeed: 1.9
   pendulumForce: 300
   hitBounceForce: 0.3
   hitMaxBounceTimes: 1
-  hitPerfectThreshold: 0.05
+  hitPerfectThreshold: 0.06
   hs_firstSpeed: 20
   hs_firstSpeedSlotCount: 0
   hs_firstDecSpeed: 0.1
@@ -4211,11 +4211,11 @@ MonoBehaviour:
   ls_rebound: 1
   ls_stopSpeed: 1
   fxNormalHit: {fileID: 180820, guid: a07608802ac497743a7f19f6633fdd70, type: 3}
-  fxNormalHitDuration: 1
+  fxNormalHitDuration: 1.5
   fxNormalHitScale: {x: 1, y: 1, z: 1}
   fxPerfectHit: {fileID: 129898, guid: 36bdc02b23d9ca94d93bd715c0cca5c0, type: 3}
-  fxPerfectHitDuration: 2
-  fxPerfectHitScale: {x: 5, y: 5, z: 5}
+  fxPerfectHitDuration: 3
+  fxPerfectHitScale: {x: 8, y: 8, z: 8}
   fxCoinShower: {fileID: 125300, guid: 44fee991522ba5146b96d736beaf1dbb, type: 3}
   fxCoinShowerDuration: 2
   fxCoinShowerScale: {x: 6, y: 6, z: 6}
@@ -4575,7 +4575,7 @@ Transform:
   m_GameObject: {fileID: 794235162}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 21.9, z: 0}
+  m_LocalPosition: {x: 0, y: 20.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
