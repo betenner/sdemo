@@ -3,8 +3,6 @@ using DG.Tweening;
 using Sirenix.OdinInspector;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using UnityEditor;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -60,6 +58,12 @@ public class GameManager : MonoBehaviour
     [LabelText("Slot倍率 (需要与Slot数量一致)"), Range(1f, 1000f)]
     public float[] slotMultiplier = { 1f, 5f, 20f, 100f};
 
+    #endregion
+
+    #region 建筑数值
+    [Title("建筑数值")]
+    [LabelText("建筑列表")]
+    public BuildCard[] buildingList;
     #endregion
 
     #region 单摆数值
@@ -266,6 +270,18 @@ public class GameManager : MonoBehaviour
     [LabelText("建筑升级特效时间 (秒)"), Range(0.1f, 10f)]
     public float fxBuildUpgradeDuration = 1.5f;
 
+    [LabelText("建筑升级完成特效")]
+    public GameObject fxBuildUpgradeComplete;
+
+    [LabelText("建筑升级完成特效缩放")]
+    public Vector3 fxBuildUpgradeCompleteScale = Vector3.one;
+
+    [LabelText("建筑升级完成特效偏移")]
+    public Vector3 fxBuildUpgradeCompleteOffset = Vector3.zero;
+
+    [LabelText("建筑升级完成特效时间 (秒)"), Range(0.1f, 10f)]
+    public float fxBuildUpgradeCompleteDuration = 1.5f;
+
     #endregion
 
     #region 相机
@@ -320,8 +336,6 @@ public class GameManager : MonoBehaviour
     [LabelText("人物预制体")]
     public GameObject charPrefab;
 
-    [LabelText("建筑列表")]
-    public BuildCard[] buildingList;
     #endregion
 
     #region 容器
@@ -796,7 +810,11 @@ public class GameManager : MonoBehaviour
         {
             SetCoin(coin - build.cost);
             build.level++;
-            build.UpdateLevel();
+            var scale = build.GetScale();
+            build.UpdateLevel(false);
+            UIManager.instance.StarFly(build.buildingObj.transform);
+            build.buildingObj.transform.DOKill();
+            build.buildingObj.transform.DOScale(scale, fxBuildUpgradeDuration).SetEase(Ease.OutCubic);
             if (fxBuildUpgrade)
             {
                 var fx = Instantiate(fxBuildUpgrade);
@@ -806,6 +824,17 @@ public class GameManager : MonoBehaviour
                 this.Invoke(() =>
                 {
                     DestroyGameObject(fx);
+                    if (fxBuildUpgradeComplete)
+                    {
+                        var fx = Instantiate(fxBuildUpgradeComplete);
+                        fx.transform.position = build.buildingObj.transform.position + fxBuildUpgradeCompleteOffset;
+                        fx.transform.localScale = fxBuildUpgradeCompleteScale;
+                        fx.SetActive(true);
+                        this.Invoke(() =>
+                        {
+                            DestroyGameObject(fx);
+                        }, fxBuildUpgradeCompleteDuration);
+                    }
                 }, fxBuildUpgradeDuration);
             }
 

@@ -103,18 +103,23 @@ public class BuildCard : MonoBehaviour
         }
     }
 
-    public void UpdateScale()
+    public Vector3 GetScale()
     {
         var scale = Vector3.one;
         if (levelScale != null && levelScale.Length > level)
         {
             scale = levelScale[level];
         }
-        if (buildingObj) buildingObj.transform.localScale = scale;
+        return scale;
+    }
+
+    public void UpdateScale()
+    {
+        if (buildingObj) buildingObj.transform.localScale = GetScale();
     }
 
     private bool _updatingLevel = false;
-    public void UpdateLevel()
+    public void UpdateLevel(bool updateScale = true)
     {
         if (_updatingLevel) return;
         _updatingLevel = true;
@@ -136,7 +141,7 @@ public class BuildCard : MonoBehaviour
             GameManager.instance.UpdateLevel();
         }
         UpdateCost();
-        UpdateScale();
+        if (updateScale) UpdateScale();
         UpdateButton();
         _updatingLevel = false;
     }

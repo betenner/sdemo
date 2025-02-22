@@ -13,6 +13,15 @@ public class UIManager : MonoBehaviour
     [LabelText("UI相机")]
     public Camera uiCamera;
 
+    [LabelText("主层级")]
+    public Transform mainLayer;
+
+    [LabelText("特效层级")]
+    public Transform fxLayer;
+
+    [LabelText("弹窗层级")]
+    public Transform popupLayer;
+
     [LabelText("盖楼界面")]
     public GameObject blockUI;
 
@@ -63,6 +72,15 @@ public class UIManager : MonoBehaviour
 
     [LabelText("城建返回按钮")]
     public Button buildBackButton;
+
+    [LabelText("星星Prefab")]
+    public GameObject starPrefab;
+
+    [LabelText("星星飞行时间 (秒)")]
+    public float starFlyDuration = 1f;
+
+    [LabelText("星星飞行目标")]
+    public Transform starFlyTarget;
 
     private void Awake()
     {
@@ -197,5 +215,27 @@ public class UIManager : MonoBehaviour
     {
         blockUI.SetActive(true);
         buildUI.SetActive(false);
+    }
+
+    /// <summary>
+    /// 飞星星
+    /// </summary>
+    /// <param name="fromWorld">世界起点</param>
+    /// <param name="easing">缓动</param>
+    public void StarFly(Transform fromWorld, Ease easing = Ease.OutCubic)
+    {
+        if (!starPrefab) return;
+        var star = Instantiate(starPrefab);
+        var fromPos = Utils.WorldToUI(fromWorld.position, GameManager.instance.mainCamera, uiCamera);
+        star.transform.SetParent(fxLayer, true);
+        star.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+        star.transform.localScale = Vector3.one;
+        star.transform.position = fromPos;
+
+        star.transform.DOKill();
+        star.transform.DOMove(starFlyTarget.position, starFlyDuration).SetEase(easing).OnComplete(() => 
+        { 
+            Destroy(star);
+        });
     }
 }

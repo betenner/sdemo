@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using UnityEngine;
 
 /// <summary>
 /// 工具类
@@ -48,5 +44,13 @@ public static class Utils
         }
 
         return $"{heading:#,#}{unit}";
+    }
+
+    public static Vector3 WorldToUI(Vector3 worldPos, Camera worldCam, Camera uiCam)
+    {
+        var vpPos = worldCam.WorldToViewportPoint(worldPos);
+        var wdPos = uiCam.ViewportToWorldPoint(vpPos);
+        wdPos.z = 0f;
+        return wdPos;
     }
 }
