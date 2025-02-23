@@ -74,6 +74,9 @@ public class GameManager : MonoBehaviour
     [LabelText("最大摆角 (度数)"), Range(1f, 179f), OnValueChanged("SetupPendulum")]
     public float pendulumMaxAngle = 30f;
 
+    [LabelText("最小摆角 (度数)"), Range(1f, 179f), OnValueChanged("SetupPendulum")]
+    public float pendulumMinAngle = 15f;
+
     [LabelText("摆动速率"), Range(0.1f, 5f), OnValueChanged("SetupPendulum")]
     public float pendulumSpeed = 2f;
 
@@ -414,10 +417,17 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void RandomizePendulumMaxAngle()
+    {
+        var min = Mathf.Min(pendulumMaxAngle, pendulumMinAngle);
+        var max = Mathf.Max(pendulumMaxAngle, pendulumMinAngle);
+        pendulumMotor.maxAngle = UnityEngine.Random.Range(min, max);
+    }
+
     private void SetupPendulum()
     {
         if (!pendulumMotor) return;
-        pendulumMotor.maxAngle = pendulumMaxAngle;
+        RandomizePendulumMaxAngle();
         pendulumMotor.speed = pendulumSpeed;
         pendulumMotor.force = pendulumForce;
     }
@@ -448,6 +458,8 @@ public class GameManager : MonoBehaviour
 
     private void CreateBlock()
     {
+        RandomizePendulumMaxAngle();
+
         if (blockPrefab == null) return;
         if (activeBlock) return;
 
