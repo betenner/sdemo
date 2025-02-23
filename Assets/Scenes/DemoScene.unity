@@ -12163,6 +12163,7 @@ MonoBehaviour:
   - {fileID: 1058719073}
   - {fileID: 658195378}
   pendulumMaxAngle: 25
+  pendulumMinAngle: 15
   pendulumSpeed: 1.9
   pendulumForce: 300
   hitBounceForce: 0.3
@@ -12213,6 +12214,10 @@ MonoBehaviour:
   fxPerfectHit: {fileID: 129898, guid: 36bdc02b23d9ca94d93bd715c0cca5c0, type: 3}
   fxPerfectHitDuration: 3
   fxPerfectHitScale: {x: 8, y: 8, z: 8}
+  fxSlotDone: {fileID: 1831709892743530, guid: 66f193da1de9a3d4cada4e2c914e8d3d, type: 3}
+  fxSlotDoneDuration: 2
+  fxSlotDoneScale: {x: 3, y: 3, z: 3}
+  fxSlotDoneOffset: {x: 0, y: 0, z: -4}
   fxCoinShower: {fileID: 125300, guid: 44fee991522ba5146b96d736beaf1dbb, type: 3}
   fxCoinShowerDuration: 2
   fxCoinShowerScale: {x: 6, y: 6, z: 6}

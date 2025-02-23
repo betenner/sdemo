@@ -255,6 +255,18 @@ public class GameManager : MonoBehaviour
     [LabelText("完美下落特效缩放")]
     public Vector3 fxPerfectHitScale = 3f * Vector3.one;
 
+    [LabelText("滚轮奖励锁定特效")]
+    public GameObject fxSlotDone;
+
+    [LabelText("滚轮奖励锁定特效时间 (秒)")]
+    public float fxSlotDoneDuration = 1f;
+
+    [LabelText("滚轮奖励锁定特效缩放")]
+    public Vector3 fxSlotDoneScale = Vector3.one;
+
+    [LabelText("滚轮奖励锁定特效偏移")]
+    public Vector3 fxSlotDoneOffset = 3f * Vector3.back;
+
     [LabelText("金币特效")]
     public GameObject fxCoinShower;
 
@@ -614,6 +626,15 @@ public class GameManager : MonoBehaviour
                         fxGo.transform.localScale = fxCoinShowerScale;
                         fxGo.SetActive(true);
                         this.Invoke(() => DestroyGameObject(fxGo), fxCoinShowerDuration);
+                    }
+                    if (fxSlotDone)
+                    {
+                        var fxSlotDoneGo = Instantiate(fxSlotDone);
+                        fxSlotDoneGo.transform.SetParent(controller.transform);
+                        fxSlotDoneGo.transform.SetLocalPositionAndRotation(fxSlotDoneOffset, Quaternion.identity);
+                        fxSlotDoneGo.transform.localScale = fxSlotDoneScale;
+                        fxSlotDoneGo.SetActive(true);
+                        this.Invoke(() => DestroyGameObject(fxSlotDoneGo), fxSlotDoneDuration);
                     }
 
                     // 人物飞入
