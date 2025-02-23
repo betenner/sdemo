@@ -24,10 +24,10 @@ public class BuildCard : MonoBehaviour
     [LabelText("名称"), OnValueChanged("UpdateName")]
     public string buildName;
 
-    [LabelText("最大等级"), Range(1, 6), OnValueChanged("UpdateLevel")]
+    [LabelText("最大等级"), Range(1, 6), OnValueChanged("@UpdateLevel(true)")]
     public int maxLevel = 3;
 
-    [LabelText("当前等级"), Min(0), OnValueChanged("UpdateLevel")]
+    [LabelText("当前等级"), Min(0), OnValueChanged("@UpdateLevel(true)")]
     public int level = 0;
 
     [LabelText("各等级缩放")]
