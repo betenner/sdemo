@@ -46,6 +46,9 @@ public class UIManager : MonoBehaviour
     [LabelText("体力文本")]
     public TextMeshProUGUI staminaText;
 
+    [LabelText("倍率按钮图片")]
+    public Image betButtonImage;
+
     [LabelText("倍率文本")]
     public TextMeshProUGUI betText;
 
@@ -132,7 +135,7 @@ public class UIManager : MonoBehaviour
     {
         var curBet = GameManager.instance.bet;
         var curStamina = GameManager.instance.stamina;
-        var maxBet = Mathf.Min(curStamina, GameManager.instance.maxBet);
+        var maxBet = Mathf.Min(curStamina, GameManager.instance.maxBetNormal);
         if (curBet >= maxBet) curBet = 1;
         else curBet++;
         GameManager.instance.SetBet(curBet);

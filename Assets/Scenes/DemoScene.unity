@@ -12150,7 +12150,13 @@ MonoBehaviour:
   initCoin: 1000000
   baseReward: 1000
   perfectMultiplier: 10
-  maxBet: 5
+  maxBetNormal: 5
+  maxBetBuff: 20
+  betButtonStyle: {fileID: 21300000, guid: 8d8e361e6224b2b4683149aafa9ca561, type: 3}
+  maxBetNormalButtonStyle: {fileID: 21300000, guid: aa7b439b554ed51438661776ca55c863,
+    type: 3}
+  maxBetBuffButtonStyle: {fileID: 21300000, guid: 1eb9db4b4c7533c4b884ec64e47b2880,
+    type: 3}
   slotMultiplier:
   - 1
   - 5
@@ -14593,6 +14599,7 @@ MonoBehaviour:
   lvText: {fileID: 291942247}
   coinText: {fileID: 1465258451}
   staminaText: {fileID: 853433280}
+  betButtonImage: {fileID: 455132440}
   betText: {fileID: 1752153994}
   popText: {fileID: 1669399869}
   buyStaminaPanel: {fileID: 1298181057}

@@ -54,8 +54,21 @@ public class GameManager : MonoBehaviour
     [LabelText("完美下落额外倍率")]
     public float perfectMultiplier = 10f;
 
-    [LabelText("最大倍率"), Range(1, 10)]
-    public int maxBet = 5;
+    [LabelText("正常最大倍率"), Range(1, 20)]
+    public int maxBetNormal = 5;
+
+    [LabelText("Buff时最大倍率"), Range(1, 50)]
+    public int maxBetBuff = 20;
+
+    [LabelText("倍率按钮样式"), PreviewField]
+    public Sprite betButtonStyle;
+
+    [LabelText("正常最大倍率按钮样式"), PreviewField]
+    public Sprite maxBetNormalButtonStyle;
+
+    [LabelText("Buff时最大倍率按钮样式"), PreviewField]
+    public Sprite maxBetBuffButtonStyle;
+
     public int bet { get; private set; }
 
     [LabelText("Slot倍率 (需要与Slot数量一致)"), Range(1f, 1000f)]
@@ -802,6 +815,18 @@ public class GameManager : MonoBehaviour
         }
         bet = value;
         UIManager.instance.betText.text = $"BET x{value}";
+        if (bet == maxBetBuff)
+        {
+            UIManager.instance.betButtonImage.sprite = maxBetBuffButtonStyle;
+        }
+        else if (bet == maxBetNormal)
+        {
+            UIManager.instance.betButtonImage.sprite = maxBetNormalButtonStyle;
+        }
+        else
+        {
+            UIManager.instance.betButtonImage.sprite = betButtonStyle;
+        }
         SaveDataManager.SaveBet();
     }
 
