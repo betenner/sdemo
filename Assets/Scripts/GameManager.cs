@@ -33,6 +33,9 @@ public class GameManager : MonoBehaviour
 
     [LabelText("楼层高度"), Range(0.1f, 10f)]
     public float blockHeight = 3.4f;
+
+    [LabelText("滚轮奖励锁定后停顿时间 (秒)"), Range(0f, 5f)]
+    public float slotDoneDelay = 1f;
     #endregion
 
     #region 资源数值
@@ -623,15 +626,18 @@ public class GameManager : MonoBehaviour
                     });
 
                     // 下一层
-                    if (simulated)
+                    this.Invoke(() =>
                     {
-                        var rb = lastBlock.GetComponent<Rigidbody>();
-                        rb.detectCollisions = true;
-                    }
-                    RaiseRope();
-                    activeBlock = null;
-                    Invoke(nameof(CreateBlock), 0.1f);
-                    UIManager.instance.EnableButtons();
+                        if (simulated)
+                        {
+                            var rb = lastBlock.GetComponent<Rigidbody>();
+                            rb.detectCollisions = true;
+                        }
+                        RaiseRope();
+                        activeBlock = null;
+                        Invoke(nameof(CreateBlock), 0.1f);
+                        UIManager.instance.EnableButtons();
+                    }, slotDoneDelay);
                 });
             }
 
