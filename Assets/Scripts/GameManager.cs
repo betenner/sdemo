@@ -815,11 +815,11 @@ public class GameManager : MonoBehaviour
         }
         bet = value;
         UIManager.instance.betText.text = $"BET x{value}";
-        if (bet == maxBetBuff)
+        if (bet >= maxBetBuff)
         {
             UIManager.instance.betButtonImage.sprite = maxBetBuffButtonStyle;
         }
-        else if (bet == maxBetNormal)
+        else if (bet >= maxBetNormal)
         {
             UIManager.instance.betButtonImage.sprite = maxBetNormalButtonStyle;
         }
