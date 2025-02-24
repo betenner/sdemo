@@ -91,6 +91,27 @@ public class UIManager : MonoBehaviour
     [LabelText("Bonus进度条")]
     public Slider bonusSlider;
 
+    [LabelText("Buff: 双倍金币")]
+    public GameObject buffDoubleCoin;
+
+    [LabelText("Buff: 双倍金币时间")]
+    public TextMeshProUGUI buffDoubleCoinTime;
+
+    [LabelText("Buff: 超级倍率")]
+    public GameObject buffSuperBet;
+
+    [LabelText("Buff: 超级倍率时间")]
+    public TextMeshProUGUI buffSuperBetTime;
+
+    [LabelText("清除数据面板")]
+    public GameObject clearDataPanel;
+
+    [LabelText("清除数据按钮")]
+    public Button clearDataButton;
+
+    [LabelText("执行清除据按钮")]
+    public Button doClearDataButton;
+
     private void Awake()
     {
         _instance = this;
@@ -112,6 +133,8 @@ public class UIManager : MonoBehaviour
         buyCoinButton.onClick.AddListener(OnBuyCoinButtonClick);
         buildButton.onClick.AddListener(OnBuildButtonClick);
         buildBackButton.onClick.AddListener(OnBuildBackButtonClick);
+        clearDataButton.onClick.AddListener(OnClearDataButtonClick);
+        doClearDataButton.onClick.AddListener(OnDoClearDataButtonClick);
     }
 
     public void RemoveEventListeners()
@@ -122,6 +145,8 @@ public class UIManager : MonoBehaviour
         buyCoinButton.onClick.RemoveAllListeners();
         buildButton.onClick.RemoveAllListeners();
         buildBackButton.onClick.RemoveAllListeners();
+        clearDataButton.onClick.RemoveAllListeners();
+        doClearDataButton.onClick.RemoveAllListeners();
     }
 
     public void OnDropButtonClick()
@@ -144,9 +169,35 @@ public class UIManager : MonoBehaviour
     {
         var curBet = GameManager.instance.bet;
         var curStamina = GameManager.instance.stamina;
-        var maxBet = Mathf.Min(curStamina, GameManager.instance.maxBetNormal);
+        var theoryMaxBet = GameManager.instance.maxBetNormal;
+        if (GameManager.instance.HasBuff(BonusItem.BuffType.SuperBet))
+        {
+            theoryMaxBet = GameManager.instance.maxBetBuff2;
+        }
+        var maxBet = Mathf.Min(curStamina, theoryMaxBet);
         if (curBet >= maxBet) curBet = 1;
-        else curBet++;
+        else
+        {
+            if (GameManager.instance.HasBuff(BonusItem.BuffType.SuperBet))
+            {
+                if (curBet == GameManager.instance.maxBetNormal)
+                {
+                    curBet = GameManager.instance.maxBetBuff1;
+                }
+                else if (curBet == GameManager.instance.maxBetBuff1)
+                {
+                    curBet = GameManager.instance.maxBetBuff2;
+                }
+                else
+                {
+                    curBet++;
+                }
+            }
+            else
+            {
+                curBet++;
+            }
+        }
         GameManager.instance.SetBet(curBet);
     }
 
@@ -195,6 +246,23 @@ public class UIManager : MonoBehaviour
     {
         GameManager.instance.SwitchToBlock();
         SwitchToBlockUI();
+    }
+
+    public void OnClearDataButtonClick()
+    {
+        clearDataPanel.SetActive(true);
+    }
+
+    public void OnDoClearDataButtonClick()
+    {
+        GameManager.instance.isQuitting = true;
+        PlayerPrefs.DeleteAll();
+        PlayerPrefs.Save();
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 
     public void DisableButtons()
@@ -249,5 +317,11 @@ public class UIManager : MonoBehaviour
         { 
             Destroy(star);
         });
+    }
+
+    public void UpdateBonus(int curPoint, int needPoint)
+    {
+        bonusText.text = $"Bonus: {curPoint} / {needPoint}";
+        bonusSlider.value = (float)curPoint / needPoint;
     }
 }

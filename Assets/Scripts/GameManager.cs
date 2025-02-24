@@ -15,13 +15,19 @@ public class GameManager : MonoBehaviour
     private const int VCAM_PRIORITY_LOW = 5;
     private const float GROUND_HEIGHT = 1.75f;
 
+    private const float BUFF_DOUBLE_COIN_MULTIPLIER = 2f;
+    private const int BUFF_SUPER_BET_MAX_BET = 20;
+    private const int BUFF_SUPER_BET_ADD_BET = 10;
+
     private static GameManager _instance;
     public static GameManager instance => _instance;
 
-    public int level { get; private set; }
-
     private WeightList<int> _slotWeights = new();
     private Dictionary<int, SlotItem> _slots = new();
+    private Dictionary<BonusItem.BuffType, float> _buffRemainTime = new();
+    private Dictionary<BonusItem.BuffType, float> _buffLastTime = new();
+
+    public bool isQuitting { get; set; }
 
     #region 全局数值
     [Title("全局数值")]
@@ -52,17 +58,17 @@ public class GameManager : MonoBehaviour
     public int initCoin = 1000000;
     public long coin { get; private set; }
 
-    [LabelText("基础奖励"), Min(1L)]
-    public int baseReward = 1000;
-
     [LabelText("完美下落额外倍率")]
     public float perfectMultiplier = 10f;
 
     [LabelText("正常最大倍率"), Range(1, 20)]
     public int maxBetNormal = 5;
 
-    [LabelText("Buff时最大倍率"), Range(1, 50)]
-    public int maxBetBuff = 20;
+    [LabelText("Buff时最大倍率1"), Range(1, 50)]
+    public int maxBetBuff1 = 10;
+
+    [LabelText("Buff时最大倍率2"), Range(1, 50)]
+    public int maxBetBuff2 = 20;
 
     [LabelText("倍率按钮样式"), PreviewField]
     public Sprite betButtonStyle;
@@ -111,9 +117,37 @@ public class GameManager : MonoBehaviour
     #endregion
 
     #region Bonus配置
-    //[Title("Bonus配置")]
-    //[LabelText("Bonus列表")]
-    //public BonusItem[] bonusList;
+    [Title("Bonus配置")]
+    [LabelText("Bonus列表")]
+    public BonusItem[] bonusList;
+
+    public void SetBonusIndex(int index, bool save = true)
+    {
+        bonusIndex = index;
+        if (save) SaveDataManager.SaveBonusIndex();
+    }
+
+    public int bonusIndex { get; private set; } = 0;
+    
+    public void SetBonusPrg(int prg, bool save = true)
+    {
+        bonusPrg = prg;
+        if (save) SaveDataManager.SaveBonusPrg();
+    }
+    public int bonusPrg { get; private set; } = 0;
+
+    public float GetBuffRemainTime(BonusItem.BuffType type)
+    {
+        if (_buffRemainTime.TryGetValue(type, out var time)) return time;
+        return 0f;
+    }
+
+    public void SetBuffRemainTime(BonusItem.BuffType type, float time, bool save = true)
+    {
+        _buffRemainTime[type] = time;
+        _buffLastTime[type] = -1f;
+        if (save) SaveDataManager.SaveBuffRemainTime();
+    }
 
     #endregion
 
@@ -438,6 +472,8 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
+        if (isQuitting) return;
+
         if (_lastGravity != gravity)
         {
             _lastGravity = gravity;
@@ -457,6 +493,8 @@ public class GameManager : MonoBehaviour
                 UIManager.instance.coinText.text = _coinSliderTargetValue.ToString("#,0");
             }
         }
+
+        UpdateBuff();
     }
 
     private void OnDestroy()
@@ -498,6 +536,7 @@ public class GameManager : MonoBehaviour
         SaveDataManager.Load();
         InitSlots();
         UpdateBuildingList();
+        TriggerBonus(false);
         SetCameraBlendTime(VCAM_BLEND_TIME_SLOW);
         CreateBlock();
     }
@@ -674,10 +713,34 @@ public class GameManager : MonoBehaviour
                     if (controller.slotController.slot2) controller.slotController.slot2.maskInteraction = SpriteMaskInteraction.None;
                     if (controller.slotController.slot3) controller.slotController.slot3.maskInteraction = SpriteMaskInteraction.None;
 
-                    // TODO slot id
+                    // 特殊Slot类型
+                    string appendText = null;
+                    if (_slots.TryGetValue(slotId, out var slot))
+                    {
+                        Debug.Log($"Slot类型: {slot.slotType}");
+                        switch (slot.slotType)
+                        {
+                            case SlotItem.SlotType.Robbery:
+                                // TODO: 偷盗玩法
+                                break;
+
+                            case SlotItem.SlotType.Sabotage:
+                                // TODO: 破坏玩法
+                                break;
+
+                            case SlotItem.SlotType.Bonus:
+                                appendText = TriggerBonus();
+                                break;
+                        }
+                    }
+
                     // 奖励
                     var multiplier = bet * (simulated ? perfectMultiplier : 1f);
-                    var reward = baseReward * multiplier;
+
+                    // 双倍金币
+                    if (HasBuff(BonusItem.BuffType.DoubleCoin)) multiplier *= BUFF_DOUBLE_COIN_MULTIPLIER;
+
+                    var reward = slot.baseBonus * multiplier;
                     SetCoin(coin + (long)reward);
                     SoundManager.instance.coin.Play();
                     if (slotId < 2)
@@ -688,7 +751,12 @@ public class GameManager : MonoBehaviour
                     {
                         SoundManager.instance.rewardBig.Play();
                     }
-                    UIManager.instance.SetPopText($"+{(long)reward:#,0}");
+                    string rewardText = $"+{(long)reward:#,0}";
+                    if (!string.IsNullOrEmpty(appendText))
+                    {
+                        rewardText += $"\n{appendText}";
+                    }
+                    UIManager.instance.SetPopText(rewardText);
 
                     // 特效
                     if (fxCoinShower)
@@ -838,7 +906,7 @@ public class GameManager : MonoBehaviour
         Destroy(go);
     }
 
-    public void SetCoin(long value, float transTime = 1f)
+    public void SetCoin(long value, float transTime = 1f, bool save = true)
     {
         if (transTime > 0f)
         {
@@ -854,18 +922,18 @@ public class GameManager : MonoBehaviour
             UIManager.instance.coinText.text = value.ToString("#,0");
         }
         coin = value;
-        SaveDataManager.SaveCoin();
+        if (save) SaveDataManager.SaveCoin();
         UpdateBuildingList();
     }
 
-    public void SetStamina(int value)
+    public void SetStamina(int value, bool save = true)
     {
         stamina = value;
         UIManager.instance.staminaText.text = value.ToString();
-        SaveDataManager.SaveStamina();
+        if (save) SaveDataManager.SaveStamina();
     }
 
-    public void SetBet(int value)
+    public void SetBet(int value, bool save = true)
     {
         if (value > stamina) value = stamina;
         if (value <= 0)
@@ -875,7 +943,7 @@ public class GameManager : MonoBehaviour
         }
         bet = value;
         UIManager.instance.betText.text = $"BET x{value}";
-        if (bet >= maxBetBuff)
+        if (bet >= maxBetBuff1)
         {
             UIManager.instance.betButtonImage.sprite = maxBetBuffButtonStyle;
         }
@@ -887,7 +955,7 @@ public class GameManager : MonoBehaviour
         {
             UIManager.instance.betButtonImage.sprite = betButtonStyle;
         }
-        SaveDataManager.SaveBet();
+        if (save) SaveDataManager.SaveBet();
     }
 
     /// <summary>
@@ -961,11 +1029,124 @@ public class GameManager : MonoBehaviour
                     }
                 }, fxBuildUpgradeDuration);
             }
-
+            SaveDataManager.SaveBuildingLevel(build);
         }
         else
         {
             UIManager.instance.buyCoinPanel.SetActive(true);
         }
+    }
+
+    public string TriggerBonus(bool inc = true)
+    {
+        if (bonusList == null || bonusList.Length == 0) return null;
+
+        // 获取当前Bonus
+        var curBonus = bonusList[bonusIndex];
+        if (curBonus == null) return null;
+        int showPrgTotal = curBonus.pointNeed;
+        string result = null;
+
+        // 获取奖励并切换至下一Bonus
+        if (inc) bonusPrg++;
+        int showPrgCur = bonusPrg;
+        if (bonusPrg >= curBonus.pointNeed)
+        {
+            if (bonusIndex >= bonusList.Length) bonusIndex = 0;
+            else bonusIndex++;
+            showPrgCur = 0;
+            bonusPrg = 0;
+            var newBonus = bonusList[bonusIndex];
+            showPrgTotal = newBonus.pointNeed;
+            
+            // 奖励
+            switch (curBonus.type)
+            {
+                case BonusItem.BonusType.Stamina:
+                    SetStamina(stamina + (int)curBonus.value);
+                    break;
+
+                case BonusItem.BonusType.Coin:
+                    SetCoin(coin + curBonus.value);
+                    break;
+            }
+
+            // 文本
+            result = $"{curBonus.type} +{curBonus.value:#,0}";
+
+            // Buff
+            if (curBonus.buff != BonusItem.BuffType.None)
+            {
+                _buffRemainTime[curBonus.buff] = curBonus.buffTime;
+                _buffLastTime[curBonus.buff] = -1f;
+            }
+        }
+
+        // 更新
+        UIManager.instance.UpdateBonus(showPrgCur, showPrgTotal);
+        UpdateBuff();
+
+        return result;
+    }
+
+    public void UpdateBuff()
+    {
+        // 双倍金币
+        _buffRemainTime.TryGetValue(BonusItem.BuffType.DoubleCoin, out var dcRemainTime);
+        dcRemainTime -= Time.deltaTime;
+        _buffRemainTime[BonusItem.BuffType.DoubleCoin] = Mathf.Max(0f, dcRemainTime);
+        if (dcRemainTime > 0)
+        {
+            if (!UIManager.instance.buffDoubleCoin.activeSelf)
+            {
+                UIManager.instance.buffDoubleCoin.SetActive(true);
+            }
+            if (!_buffLastTime.TryGetValue(BonusItem.BuffType.DoubleCoin, out var dcLastTime)) dcLastTime = -1f;
+            if (Time.time - dcLastTime >= 1f)
+            {
+                UIManager.instance.buffDoubleCoinTime.text = Utils.GetTimeMMSS(dcRemainTime);
+            }
+            _buffRemainTime[BonusItem.BuffType.DoubleCoin] = dcRemainTime;
+            SaveDataManager.SaveBuffRemainTime();
+        }
+        else
+        {
+            if (UIManager.instance.buffDoubleCoin.activeSelf)
+            {
+                UIManager.instance.buffDoubleCoin.SetActive(false);
+            }
+        }
+
+        // 超级倍率
+        if (!_buffRemainTime.TryGetValue(BonusItem.BuffType.SuperBet, out var sbRemainTime)) sbRemainTime = -1f;
+        sbRemainTime -= Time.deltaTime;
+        _buffRemainTime[BonusItem.BuffType.SuperBet] = Mathf.Max(0f, sbRemainTime);
+        if (sbRemainTime > 0)
+        {
+            if (!UIManager.instance.buffSuperBet.activeSelf)
+            {
+                UIManager.instance.buffSuperBet.SetActive(true);
+            }
+            _buffLastTime.TryGetValue(BonusItem.BuffType.SuperBet, out var sbLastTime);
+            if (Time.time - sbLastTime >= 1f)
+            {
+                UIManager.instance.buffSuperBetTime.text = Utils.GetTimeMMSS(sbRemainTime);
+            }
+            _buffRemainTime[BonusItem.BuffType.SuperBet] = sbRemainTime;
+            SaveDataManager.SaveBuffRemainTime();
+        }
+        else
+        {
+            if (UIManager.instance.buffSuperBet.activeSelf)
+            {
+                UIManager.instance.buffSuperBet.SetActive(false);
+            }
+            SetBet(Mathf.Min(bet, maxBetNormal));
+        }
+    }
+
+    public bool HasBuff(BonusItem.BuffType type)
+    {
+        return _buffRemainTime.TryGetValue(type, out var time) && time > 0f;
     }
 }
