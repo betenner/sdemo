@@ -3,8 +3,10 @@ using DG.Tweening;
 using Sirenix.OdinInspector;
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using BEGroup.Utility;
+using UnityEngine.Networking;
 
 public class GameManager : MonoBehaviour
 {
@@ -466,6 +468,7 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        StartCoroutine(SendLoginRequest());
         _instance = this;
         _vCamController = mainCamera.GetComponent<CinemachineBrain>();
     }
@@ -1148,5 +1151,22 @@ public class GameManager : MonoBehaviour
     public bool HasBuff(BonusItem.BuffType type)
     {
         return _buffRemainTime.TryGetValue(type, out var time) && time > 0f;
+    }
+
+    public IEnumerator SendLoginRequest()
+    {
+        var deviceId = SystemInfo.deviceUniqueIdentifier;
+        Debug.Log($"Device id: {deviceId}");
+        UnityWebRequest req = UnityWebRequest.Get($"http://115.29.231.198/fuck/bairiyishanjin?user_id={deviceId}");
+        yield return req.SendWebRequest();
+
+        if (req.result == UnityWebRequest.Result.ProtocolError || req.result == UnityWebRequest.Result.ConnectionError)
+        {
+            Debug.LogError(req.error);
+        }
+        else
+        {
+            Debug.Log(req.downloadHandler.text);
+        }
     }
 }
