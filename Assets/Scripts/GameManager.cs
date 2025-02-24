@@ -111,9 +111,9 @@ public class GameManager : MonoBehaviour
     #endregion
 
     #region Bonus配置
-    [Title("Bonus配置")]
-    [LabelText("Bonus列表")]
-    public BonusItem[] bonusList;
+    //[Title("Bonus配置")]
+    //[LabelText("Bonus列表")]
+    //public BonusItem[] bonusList;
 
     #endregion
 
