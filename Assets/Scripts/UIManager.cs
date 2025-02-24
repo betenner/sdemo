@@ -46,6 +46,9 @@ public class UIManager : MonoBehaviour
     [LabelText("体力文本")]
     public TextMeshProUGUI staminaText;
 
+    [LabelText("倍率按钮图片")]
+    public Image betButtonImage;
+
     [LabelText("倍率文本")]
     public TextMeshProUGUI betText;
 
@@ -81,6 +84,12 @@ public class UIManager : MonoBehaviour
 
     [LabelText("星星飞行目标")]
     public Transform starFlyTarget;
+
+    [LabelText("Bonus文本")]
+    public TextMeshProUGUI bonusText;
+
+    [LabelText("Bonus进度条")]
+    public Slider bonusSlider;
 
     private void Awake()
     {
@@ -126,13 +135,16 @@ public class UIManager : MonoBehaviour
         GameManager.instance.SetStamina(GameManager.instance.stamina - GameManager.instance.bet);
         GameManager.instance.SetBet(GameManager.instance.bet);
         GameManager.instance.DropActiveBlock();
+
+        Debug.Log($"总次数: {GameManager.instance.slotRollTimes}");
+        GameManager.instance.IncSlotRollTime(false);
     }
 
     public void OnBetButtonClick()
     {
         var curBet = GameManager.instance.bet;
         var curStamina = GameManager.instance.stamina;
-        var maxBet = Mathf.Min(curStamina, GameManager.instance.maxBet);
+        var maxBet = Mathf.Min(curStamina, GameManager.instance.maxBetNormal);
         if (curBet >= maxBet) curBet = 1;
         else curBet++;
         GameManager.instance.SetBet(curBet);

@@ -4,6 +4,7 @@ using Sirenix.OdinInspector;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using BEGroup.Utility;
 
 public class GameManager : MonoBehaviour
 {
@@ -19,6 +20,9 @@ public class GameManager : MonoBehaviour
 
     public int level { get; private set; }
 
+    private WeightList<int> _slotWeights = new();
+    private Dictionary<int, SlotItem> _slots = new();
+
     #region 全局数值
     [Title("全局数值")]
     [LabelText("重力"), Range(0.01f, 500f)]
@@ -33,6 +37,9 @@ public class GameManager : MonoBehaviour
 
     [LabelText("楼层高度"), Range(0.1f, 10f)]
     public float blockHeight = 3.4f;
+
+    [LabelText("滚轮奖励锁定后停顿时间 (秒)"), Range(0f, 5f)]
+    public float slotDoneDelay = 1f;
     #endregion
 
     #region 资源数值
@@ -51,12 +58,49 @@ public class GameManager : MonoBehaviour
     [LabelText("完美下落额外倍率")]
     public float perfectMultiplier = 10f;
 
-    [LabelText("最大倍率"), Range(1, 10)]
-    public int maxBet = 5;
+    [LabelText("正常最大倍率"), Range(1, 20)]
+    public int maxBetNormal = 5;
+
+    [LabelText("Buff时最大倍率"), Range(1, 50)]
+    public int maxBetBuff = 20;
+
+    [LabelText("倍率按钮样式"), PreviewField]
+    public Sprite betButtonStyle;
+
+    [LabelText("正常最大倍率按钮样式"), PreviewField]
+    public Sprite maxBetNormalButtonStyle;
+
+    [LabelText("Buff时最大倍率按钮样式"), PreviewField]
+    public Sprite maxBetBuffButtonStyle;
+
     public int bet { get; private set; }
 
-    [LabelText("Slot倍率 (需要与Slot数量一致)"), Range(1f, 1000f)]
-    public float[] slotMultiplier = { 1f, 5f, 20f, 100f};
+    #endregion
+
+    #region Slot配置
+
+    [Title("Slot配置")]
+    [LabelText("Slot列表")]
+    public SlotItem[] slotItems;
+
+    [LabelText("预定义好的Slot结果 (填写Slot ID)")]
+    public int[] predefinedSlotResults;
+
+    /// <summary>
+    /// 滚轮次数
+    /// </summary>
+    public int slotRollTimes { get; private set; } = 0;
+
+    public void IncSlotRollTime(bool save = true)
+    {
+        SetSlotRollTime(slotRollTimes + 1, save);
+    }
+
+    public void SetSlotRollTime(int time, bool save = true)
+    {
+        slotRollTimes = time;
+        if (save) SaveDataManager.SaveSlotRollTime();
+    }
 
     #endregion
 
@@ -66,10 +110,20 @@ public class GameManager : MonoBehaviour
     public BuildCard[] buildingList;
     #endregion
 
+    #region Bonus配置
+    [Title("Bonus配置")]
+    [LabelText("Bonus列表")]
+    public BonusItem[] bonusList;
+
+    #endregion
+
     #region 单摆数值
     [Title("单摆数值")]
     [LabelText("最大摆角 (度数)"), Range(1f, 179f), OnValueChanged("SetupPendulum")]
     public float pendulumMaxAngle = 30f;
+
+    [LabelText("最小摆角 (度数)"), Range(1f, 179f), OnValueChanged("SetupPendulum")]
+    public float pendulumMinAngle = 15f;
 
     [LabelText("摆动速率"), Range(0.1f, 5f), OnValueChanged("SetupPendulum")]
     public float pendulumSpeed = 2f;
@@ -249,6 +303,18 @@ public class GameManager : MonoBehaviour
     [LabelText("完美下落特效缩放")]
     public Vector3 fxPerfectHitScale = 3f * Vector3.one;
 
+    [LabelText("滚轮奖励锁定特效")]
+    public GameObject fxSlotDone;
+
+    [LabelText("滚轮奖励锁定特效时间 (秒)")]
+    public float fxSlotDoneDuration = 1f;
+
+    [LabelText("滚轮奖励锁定特效缩放")]
+    public Vector3 fxSlotDoneScale = Vector3.one;
+
+    [LabelText("滚轮奖励锁定特效偏移")]
+    public Vector3 fxSlotDoneOffset = 3f * Vector3.back;
+
     [LabelText("金币特效")]
     public GameObject fxCoinShower;
 
@@ -411,10 +477,17 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void RandomizePendulumMaxAngle()
+    {
+        var min = Mathf.Min(pendulumMaxAngle, pendulumMinAngle);
+        var max = Mathf.Max(pendulumMaxAngle, pendulumMinAngle);
+        pendulumMotor.maxAngle = UnityEngine.Random.Range(min, max);
+    }
+
     private void SetupPendulum()
     {
         if (!pendulumMotor) return;
-        pendulumMotor.maxAngle = pendulumMaxAngle;
+        RandomizePendulumMaxAngle();
         pendulumMotor.speed = pendulumSpeed;
         pendulumMotor.force = pendulumForce;
     }
@@ -423,9 +496,27 @@ public class GameManager : MonoBehaviour
     {
         Application.targetFrameRate = 60;
         SaveDataManager.Load();
+        InitSlots();
         UpdateBuildingList();
         SetCameraBlendTime(VCAM_BLEND_TIME_SLOW);
         CreateBlock();
+    }
+
+    private void InitSlots()
+    {
+        if (slotItems != null)
+        {
+            foreach (var slot in slotItems)
+            {
+                _slots[slot.id] = slot;
+                _slotWeights.Add(slot.id, slot.weight);
+            }
+        }
+    }
+
+    public SlotItem GetRandomSlot()
+    {
+        return _slots[_slotWeights.GetRandomElement()];
     }
 
     public void UpdateBuildingList()
@@ -445,6 +536,8 @@ public class GameManager : MonoBehaviour
 
     private void CreateBlock()
     {
+        RandomizePendulumMaxAngle();
+
         if (blockPrefab == null) return;
         if (activeBlock) return;
 
@@ -573,14 +666,21 @@ public class GameManager : MonoBehaviour
                 }
                 
                 // Slots
-                DoSlots(controller, (slotIndex) =>
+                DoSlots(controller, (slotId) =>
                 {
+                    // Mask处理
+                    if (controller.slotMask) controller.slotMask.enabled = false;
+                    if (controller.slotController.slot1) controller.slotController.slot1.maskInteraction = SpriteMaskInteraction.None;
+                    if (controller.slotController.slot2) controller.slotController.slot2.maskInteraction = SpriteMaskInteraction.None;
+                    if (controller.slotController.slot3) controller.slotController.slot3.maskInteraction = SpriteMaskInteraction.None;
+
+                    // TODO slot id
                     // 奖励
-                    var multiplier = bet * slotMultiplier[slotIndex] * (simulated ? perfectMultiplier : 1f);
+                    var multiplier = bet * (simulated ? perfectMultiplier : 1f);
                     var reward = baseReward * multiplier;
                     SetCoin(coin + (long)reward);
                     SoundManager.instance.coin.Play();
-                    if (slotIndex < 2)
+                    if (slotId < 2)
                     {
                         SoundManager.instance.reward.Play();
                     }
@@ -599,6 +699,15 @@ public class GameManager : MonoBehaviour
                         fxGo.transform.localScale = fxCoinShowerScale;
                         fxGo.SetActive(true);
                         this.Invoke(() => DestroyGameObject(fxGo), fxCoinShowerDuration);
+                    }
+                    if (fxSlotDone)
+                    {
+                        var fxSlotDoneGo = Instantiate(fxSlotDone);
+                        fxSlotDoneGo.transform.SetParent(controller.transform);
+                        fxSlotDoneGo.transform.SetLocalPositionAndRotation(fxSlotDoneOffset, Quaternion.identity);
+                        fxSlotDoneGo.transform.localScale = fxSlotDoneScale;
+                        fxSlotDoneGo.SetActive(true);
+                        this.Invoke(() => DestroyGameObject(fxSlotDoneGo), fxSlotDoneDuration);
                     }
 
                     // 人物飞入
@@ -623,15 +732,18 @@ public class GameManager : MonoBehaviour
                     });
 
                     // 下一层
-                    if (simulated)
+                    this.Invoke(() =>
                     {
-                        var rb = lastBlock.GetComponent<Rigidbody>();
-                        rb.detectCollisions = true;
-                    }
-                    RaiseRope();
-                    activeBlock = null;
-                    Invoke(nameof(CreateBlock), 0.1f);
-                    UIManager.instance.EnableButtons();
+                        if (simulated)
+                        {
+                            var rb = lastBlock.GetComponent<Rigidbody>();
+                            rb.detectCollisions = true;
+                        }
+                        RaiseRope();
+                        activeBlock = null;
+                        Invoke(nameof(CreateBlock), 0.1f);
+                        UIManager.instance.EnableButtons();
+                    }, slotDoneDelay);
                 });
             }
 
@@ -763,6 +875,18 @@ public class GameManager : MonoBehaviour
         }
         bet = value;
         UIManager.instance.betText.text = $"BET x{value}";
+        if (bet >= maxBetBuff)
+        {
+            UIManager.instance.betButtonImage.sprite = maxBetBuffButtonStyle;
+        }
+        else if (bet >= maxBetNormal)
+        {
+            UIManager.instance.betButtonImage.sprite = maxBetNormalButtonStyle;
+        }
+        else
+        {
+            UIManager.instance.betButtonImage.sprite = betButtonStyle;
+        }
         SaveDataManager.SaveBet();
     }
 
