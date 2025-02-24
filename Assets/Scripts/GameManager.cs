@@ -426,6 +426,7 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         _instance = this;
+        SdkManager.instance.InitFB();
         _vCamController = mainCamera.GetComponent<CinemachineBrain>();
     }
 
