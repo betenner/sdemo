@@ -4,6 +4,7 @@ using Sirenix.OdinInspector;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using BEGroup.Utility;
 
 public class GameManager : MonoBehaviour
 {
@@ -18,6 +19,9 @@ public class GameManager : MonoBehaviour
     public static GameManager instance => _instance;
 
     public int level { get; private set; }
+
+    private WeightList<int> _slotWeights = new();
+    private Dictionary<int, SlotItem> _slots = new();
 
     #region 全局数值
     [Title("全局数值")]
@@ -71,8 +75,32 @@ public class GameManager : MonoBehaviour
 
     public int bet { get; private set; }
 
-    [LabelText("Slot倍率 (需要与Slot数量一致)"), Range(1f, 1000f)]
-    public float[] slotMultiplier = { 1f, 5f, 20f, 100f};
+    #endregion
+
+    #region Slot配置
+
+    [Title("Slot配置")]
+    [LabelText("Slot列表")]
+    public SlotItem[] slotItems;
+
+    [LabelText("预定义好的Slot结果 (填写Slot ID)")]
+    public int[] predefinedSlotResults;
+
+    /// <summary>
+    /// 滚轮次数
+    /// </summary>
+    public int slotRollTimes { get; private set; } = 0;
+
+    public void IncSlotRollTime(bool save = true)
+    {
+        SetSlotRollTime(slotRollTimes + 1, save);
+    }
+
+    public void SetSlotRollTime(int time, bool save = true)
+    {
+        slotRollTimes = time;
+        if (save) SaveDataManager.SaveSlotRollTime();
+    }
 
     #endregion
 
@@ -461,9 +489,27 @@ public class GameManager : MonoBehaviour
     {
         Application.targetFrameRate = 60;
         SaveDataManager.Load();
+        InitSlots();
         UpdateBuildingList();
         SetCameraBlendTime(VCAM_BLEND_TIME_SLOW);
         CreateBlock();
+    }
+
+    private void InitSlots()
+    {
+        if (slotItems != null)
+        {
+            foreach (var slot in slotItems)
+            {
+                _slots[slot.id] = slot;
+                _slotWeights.Add(slot.id, slot.weight);
+            }
+        }
+    }
+
+    public SlotItem GetRandomSlot()
+    {
+        return _slots[_slotWeights.GetRandomElement()];
     }
 
     public void UpdateBuildingList()
@@ -613,14 +659,21 @@ public class GameManager : MonoBehaviour
                 }
                 
                 // Slots
-                DoSlots(controller, (slotIndex) =>
+                DoSlots(controller, (slotId) =>
                 {
+                    // Mask处理
+                    if (controller.slotMask) controller.slotMask.enabled = false;
+                    if (controller.slotController.slot1) controller.slotController.slot1.maskInteraction = SpriteMaskInteraction.None;
+                    if (controller.slotController.slot2) controller.slotController.slot2.maskInteraction = SpriteMaskInteraction.None;
+                    if (controller.slotController.slot3) controller.slotController.slot3.maskInteraction = SpriteMaskInteraction.None;
+
+                    // TODO slot id
                     // 奖励
-                    var multiplier = bet * slotMultiplier[slotIndex] * (simulated ? perfectMultiplier : 1f);
+                    var multiplier = bet * (simulated ? perfectMultiplier : 1f);
                     var reward = baseReward * multiplier;
                     SetCoin(coin + (long)reward);
                     SoundManager.instance.coin.Play();
-                    if (slotIndex < 2)
+                    if (slotId < 2)
                     {
                         SoundManager.instance.reward.Play();
                     }

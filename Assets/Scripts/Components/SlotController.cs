@@ -21,7 +21,7 @@ public class SlotController : MonoBehaviour
     public SpriteRenderer slot1;
     public SpriteRenderer slot2;
     public SpriteRenderer slot3;
-    public Sprite[] slotPools;
+    //public Sprite[] slotPools;
 
     [Title("数值")]
     [LabelText("每张大小 (像素)")]
@@ -68,10 +68,11 @@ public class SlotController : MonoBehaviour
 
     private Phase _phase = Phase.First;
 
-    private Sprite GetRandomSlot(out int index)
+    private Sprite GetRandomSlot(out int id)
     {
-        index = UnityEngine.Random.Range(0, slotPools.Length);
-        return (slotPools == null || slotPools.Length == 0) ? null : slotPools[index];
+        var slot = GameManager.instance.GetRandomSlot();
+        id = slot.id;
+        return slot.image;
     }
 
     private bool _rolling = false;
@@ -80,9 +81,9 @@ public class SlotController : MonoBehaviour
     private SpriteRenderer _curSlot;
     private SpriteRenderer _up2Slot;
     private SpriteRenderer _up1Slot;
-    private int _curSlotIndex = 0;
-    private int _up2SlotIndex = 0;
-    private int _up1SlotIndex = 0;
+    private int _curSlotId = 0;
+    private int _up2SlotId = 0;
+    private int _up1SlotId = 0;
     private Action<int> _onStop;
     private int _initSlotCount = 0;
     private int _midSlotCount = 0;
@@ -99,19 +100,22 @@ public class SlotController : MonoBehaviour
 
     public void Reset()
     {
+        if (slot1) slot1.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
+        if (slot2) slot2.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
+        if (slot3) slot3.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
         _rolling = false;
         //SoundManager.instance.slot.Stop();
         _offset = 0f;
         _curSlot = slot1;
-        _curSlot.sprite = GetRandomSlot(out _curSlotIndex);
+        _curSlot.sprite = GetRandomSlot(out _curSlotId);
         _curSlot.sortingOrder = 0;
         _curSlot.transform.localPosition = Vector3.zero;
         _up1Slot = slot2;
-        _up1Slot.sprite = GetRandomSlot(out _up1SlotIndex);
+        _up1Slot.sprite = GetRandomSlot(out _up1SlotId);
         _up1Slot.sortingOrder = 0;
         _up1Slot.transform.localPosition = UPP * slotSize.y * Vector3.up;
         _up2Slot = slot3;
-        _up2Slot.sprite = GetRandomSlot(out _up2SlotIndex);
+        _up2Slot.sprite = GetRandomSlot(out _up2SlotId);
         _up2Slot.sortingOrder = 0;
         _up2Slot.transform.localPosition = UPP * slotSize.y * 2f * Vector3.up;
         _initSlotCount = 0;
@@ -226,12 +230,12 @@ public class SlotController : MonoBehaviour
             else if (_offset <= -UPP * slotSize.y)
             {
                 SoundManager.instance.slotClick.Play();
-                _curSlot = GetNextSlot(_curSlot, out _curSlotIndex);
-                _up1Slot = GetNextSlot(_up1Slot, out _up1SlotIndex);
-                _up2Slot = GetNextSlot(_up2Slot, out _up2SlotIndex);
+                _curSlot = GetNextSlot(_curSlot, out _curSlotId);
+                _up1Slot = GetNextSlot(_up1Slot, out _up1SlotId);
+                _up2Slot = GetNextSlot(_up2Slot, out _up2SlotId);
                 if (!_rebounding) _offset += UPP * slotSize.y;
                 _up2Slot.transform.localPosition = (_offset + UPP * slotSize.y * 2f) * Vector3.up;
-                _up2Slot.sprite = GetRandomSlot(out _up2SlotIndex);
+                _up2Slot.sprite = GetRandomSlot(out _up2SlotId);
                 switch (_phase)
                 {
                     case Phase.First:
@@ -259,7 +263,7 @@ public class SlotController : MonoBehaviour
                     _up2Slot.gameObject.SetActive(false);
                     _curSlot.sortingOrder = 100;
                     _curSlot.transform.localPosition = Vector3.zero;
-                    _onStop?.Invoke(_curSlotIndex);
+                    _onStop?.Invoke(_curSlotId);
                 }
             }
         }
@@ -275,16 +279,16 @@ public class SlotController : MonoBehaviour
                 _up2Slot.gameObject.SetActive(false);
                 _curSlot.sortingOrder = 100;
                 _curSlot.transform.localPosition = Vector3.zero;
-                _onStop?.Invoke(_curSlotIndex);
+                _onStop?.Invoke(_curSlotId);
             }
         }
     }
 
     private int GetSlotIndex(SpriteRenderer slot)
     {
-        if (slot == _curSlot) return _curSlotIndex;
-        if (slot == _up1Slot) return _up1SlotIndex;
-        return _up2SlotIndex;
+        if (slot == _curSlot) return _curSlotId;
+        if (slot == _up1Slot) return _up1SlotId;
+        return _up2SlotId;
     }
 
     private SpriteRenderer GetNextSlot(SpriteRenderer slot, out int index)

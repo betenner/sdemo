@@ -14,6 +14,7 @@ public static class SaveDataManager
     private const string KEY_COIN = "_coin";
     private const string KEY_BET = "_bet";
     private const string KEY_BUILD_LEVEL = "_build_{0}_level";
+    private const string KEY_SLOT_ROLL_TIME = "_slot_roll_time";
 
     /// <summary>
     /// 加载数据
@@ -27,6 +28,7 @@ public static class SaveDataManager
             GameManager.instance.SetCoin(coin);
         }
         GameManager.instance.SetBet(PlayerPrefs.GetInt(KEY_BET, 1));
+        GameManager.instance.SetSlotRollTime(PlayerPrefs.GetInt(KEY_SLOT_ROLL_TIME, 0));
 
         if (GameManager.instance.buildingList != null)
         {
@@ -65,11 +67,18 @@ public static class SaveDataManager
         if (flush) PlayerPrefs.Save();
     }
 
+    public static void SaveSlotRollTime(bool flush = true)
+    {
+        PlayerPrefs.SetInt(KEY_SLOT_ROLL_TIME, GameManager.instance.slotRollTimes);
+        if (flush) PlayerPrefs.Save();
+    }
+
     public static void SaveAll()
     {
         SaveStamina(false);
         SaveCoin(false);
         SaveBet(false);
+        SaveSlotRollTime(false);
         if (GameManager.instance.buildingList != null)
         {
             foreach (var building in GameManager.instance.buildingList)

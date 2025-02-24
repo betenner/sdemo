@@ -1,12 +1,11 @@
 using DG.Tweening;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class BlockController : MonoBehaviour
 {
     public SlotController slotController;
+    public SpriteMask slotMask;
 
     private const float STABLE_THRESHOLD = 0.01f;
     
@@ -37,6 +36,7 @@ public class BlockController : MonoBehaviour
     {
         _rigidbody = GetComponent<Rigidbody>();
         _rigidbody.sleepThreshold = STABLE_THRESHOLD;
+        if (slotMask) slotMask.enabled = true;
     }
 
     void Update()
