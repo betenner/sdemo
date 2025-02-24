@@ -110,6 +110,13 @@ public class GameManager : MonoBehaviour
     public BuildCard[] buildingList;
     #endregion
 
+    #region Bonus配置
+    [Title("Bonus配置")]
+    [LabelText("Bonus列表")]
+    public BonusItem[] bonusList;
+
+    #endregion
+
     #region 单摆数值
     [Title("单摆数值")]
     [LabelText("最大摆角 (度数)"), Range(1f, 179f), OnValueChanged("SetupPendulum")]

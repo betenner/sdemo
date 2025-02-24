@@ -85,6 +85,12 @@ public class UIManager : MonoBehaviour
     [LabelText("星星飞行目标")]
     public Transform starFlyTarget;
 
+    [LabelText("Bonus文本")]
+    public TextMeshProUGUI bonusText;
+
+    [LabelText("Bonus进度条")]
+    public Slider bonusSlider;
+
     private void Awake()
     {
         _instance = this;
