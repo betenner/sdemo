@@ -8,7 +8,7 @@ public class SlotItem : MonoBehaviour
         Normal,
         Robbery,
         Sabotage,
-        Event,
+        Bonus,
     }
 
     [LabelText("ID"), Min(1)]

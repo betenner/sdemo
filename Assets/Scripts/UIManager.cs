@@ -129,6 +129,9 @@ public class UIManager : MonoBehaviour
         GameManager.instance.SetStamina(GameManager.instance.stamina - GameManager.instance.bet);
         GameManager.instance.SetBet(GameManager.instance.bet);
         GameManager.instance.DropActiveBlock();
+
+        Debug.Log($"总次数: {GameManager.instance.slotRollTimes}");
+        GameManager.instance.IncSlotRollTime(false);
     }
 
     public void OnBetButtonClick()
