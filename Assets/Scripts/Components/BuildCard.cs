@@ -1,4 +1,5 @@
-﻿using Sirenix.OdinInspector;
+﻿using DG.Tweening;
+using Sirenix.OdinInspector;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +38,9 @@ public class BuildCard : MonoBehaviour
     public int[] levelCost;
 
     [Title("引用")]
+    [LabelText("容器")]
+    public Transform container;
+    
     [LabelText("建筑对象")]
     public GameObject buildingObj;
 
@@ -54,6 +58,12 @@ public class BuildCard : MonoBehaviour
 
     [LabelText("花费文本")]
     public TextMeshProUGUI costText;
+
+    [LabelText("升级完成效果缩放")]
+    public Vector3 upgradeCompleteEffectScale = 1.2f * Vector3.one;
+
+    [LabelText("升级完成效果持续时间 (秒)")]
+    public float upgradeCompleteEffectDuration = 0.3f;
 
     public Action<BuildCard> onClick;
 
@@ -153,7 +163,17 @@ public class BuildCard : MonoBehaviour
 
     public void UpdateButton()
     {
-        if (_button) _button.interactable = level < maxLevel;
+        if (_button) _button.enabled = !GameManager.instance.IsBuildingUpgrading(this) && level < maxLevel;
+    }
+
+    public void UpgradeCompleteEffect()
+    {
+        container.DOKill();
+        container.localScale = Vector3.one;
+        container.DOScale(upgradeCompleteEffectScale, upgradeCompleteEffectDuration / 2f).OnComplete(() =>
+        {
+            container.DOScale(Vector3.one, upgradeCompleteEffectDuration / 2f);
+        });
     }
 
     public void UpdateInfo()

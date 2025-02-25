@@ -4492,17 +4492,17 @@ PrefabInstance:
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
       propertyPath: levelScale.Array.data[0].x
-      value: 0.01
+      value: 0.001
       objectReference: {fileID: 0}
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
       propertyPath: levelScale.Array.data[0].y
-      value: 0.01
+      value: 0.001
       objectReference: {fileID: 0}
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
       propertyPath: levelScale.Array.data[0].z
-      value: 0.01
+      value: 0.001
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -11997,17 +11997,17 @@ PrefabInstance:
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
       propertyPath: levelScale.Array.data[0].x
-      value: 0.01
+      value: 0.001
       objectReference: {fileID: 0}
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
       propertyPath: levelScale.Array.data[0].y
-      value: 0.01
+      value: 0.001
       objectReference: {fileID: 0}
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
       propertyPath: levelScale.Array.data[0].z
-      value: 0.01
+      value: 0.001
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -13453,6 +13453,8 @@ MonoBehaviour:
     type: 3}
   maxBetBuffButtonStyle: {fileID: 21300000, guid: 1eb9db4b4c7533c4b884ec64e47b2880,
     type: 3}
+  buyCoinAmount: 1000000
+  buyStaminaAmount: 100
   slotItems:
   - {fileID: 2009279510}
   - {fileID: 58116069}
@@ -18293,17 +18295,17 @@ PrefabInstance:
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
       propertyPath: levelScale.Array.data[0].x
-      value: 0.01
+      value: 0.001
       objectReference: {fileID: 0}
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
       propertyPath: levelScale.Array.data[0].y
-      value: 0.01
+      value: 0.001
       objectReference: {fileID: 0}
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
       propertyPath: levelScale.Array.data[0].z
-      value: 0.01
+      value: 0.001
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -20186,17 +20188,17 @@ PrefabInstance:
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
       propertyPath: levelScale.Array.data[0].x
-      value: 0.01
+      value: 0.001
       objectReference: {fileID: 0}
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
       propertyPath: levelScale.Array.data[0].y
-      value: 0.01
+      value: 0.001
       objectReference: {fileID: 0}
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
       propertyPath: levelScale.Array.data[0].z
-      value: 0.01
+      value: 0.001
       objectReference: {fileID: 0}
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
@@ -33925,17 +33927,17 @@ PrefabInstance:
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
       propertyPath: levelScale.Array.data[0].x
-      value: 0.01
+      value: 0.001
       objectReference: {fileID: 0}
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
       propertyPath: levelScale.Array.data[0].y
-      value: 0.01
+      value: 0.001
       objectReference: {fileID: 0}
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
       propertyPath: levelScale.Array.data[0].z
-      value: 0.01
+      value: 0.001
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

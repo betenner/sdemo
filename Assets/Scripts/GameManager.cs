@@ -30,6 +30,7 @@ public class GameManager : MonoBehaviour
     private Dictionary<BonusItem.BuffType, float> _buffLastTime = new();
     private bool _uiManagerInit = false;
     private bool _soundManagerInit = false;
+    private Dictionary<BuildCard, bool> _buildingUpgrading = new();
 
     public bool isQuitting { get; set; }
 
@@ -540,6 +541,11 @@ public class GameManager : MonoBehaviour
         _instance = null;
     }
 
+    public bool IsBuildingUpgrading(BuildCard build)
+    {
+        return _buildingUpgrading.TryGetValue(build, out var result) && result;
+    }
+
     private void SetupRope()
     {
         if (rope)
@@ -1039,6 +1045,17 @@ public class GameManager : MonoBehaviour
     {
         if (coin >= build.cost)
         {
+            // 状态 (CD)
+            _buildingUpgrading[build] = true;
+            build.UpdateButton();
+            this.Invoke(() =>
+            {
+                _buildingUpgrading[build] = false;
+                build.UpdateButton();
+                build.UpgradeCompleteEffect();
+            }, buildingDuration);
+
+
             SetCoin(coin - build.cost);
             build.level++;
             var scale = build.GetScale();
