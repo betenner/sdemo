@@ -40,6 +40,9 @@ public class BuildCard : MonoBehaviour
     [Title("引用")]
     [LabelText("容器")]
     public Transform container;
+
+    [LabelText("蒙板")]
+    public Image mask;
     
     [LabelText("建筑对象")]
     public GameObject buildingObj;
@@ -59,11 +62,24 @@ public class BuildCard : MonoBehaviour
     [LabelText("花费文本")]
     public TextMeshProUGUI costText;
 
-    [LabelText("升级完成效果缩放")]
-    public Vector3 upgradeCompleteEffectScale = 1.2f * Vector3.one;
+    [LabelText("升级完成特效")]
+    public GameObject upgradeCompleteEffect;
 
-    [LabelText("升级完成效果持续时间 (秒)")]
-    public float upgradeCompleteEffectDuration = 0.3f;
+    [Title("效果")]
+    [LabelText("蒙板颜色")]
+    public Color maskColor = new Color(0f, 0f, 0f, 0.7f);
+
+    [LabelText("升级完成特效缩放")]
+    public Vector3 upgradeCompleteEffectScale = Vector3.one;
+
+    [LabelText("升级完成特效持续时间")]
+    public float upgradeCompleteEffectDuration = 1f;
+
+    [LabelText("升级完成卡片缩放")]
+    public Vector3 upgradeCompleteCardScale = 1.2f * Vector3.one;
+
+    [LabelText("升级完成卡片缩放持续时间 (秒)")]
+    public float upgradeCompleteCardScaleDuration = 0.3f;
 
     public Action<BuildCard> onClick;
 
@@ -168,12 +184,36 @@ public class BuildCard : MonoBehaviour
 
     public void UpgradeCompleteEffect()
     {
+        // 特效
+        if (upgradeCompleteEffect)
+        {
+            var fx = Instantiate(upgradeCompleteEffect);
+            fx.transform.position = container.transform.position;
+            fx.transform.localScale = upgradeCompleteEffectScale;
+            fx.SetActive(true);
+            this.Invoke(() =>
+            {
+                Destroy(fx);
+            }, upgradeCompleteEffectDuration);
+        }
+
+        // 缩放
         container.DOKill();
         container.localScale = Vector3.one;
-        container.DOScale(upgradeCompleteEffectScale, upgradeCompleteEffectDuration / 2f).OnComplete(() =>
+        container.DOScale(upgradeCompleteCardScale, upgradeCompleteCardScaleDuration / 2f).OnComplete(() =>
         {
-            container.DOScale(Vector3.one, upgradeCompleteEffectDuration / 2f);
+            container.DOScale(Vector3.one, upgradeCompleteCardScaleDuration / 2f);
         });
+    }
+
+    public void MaskEffect()
+    {
+        if (mask)
+        {
+            mask.DOKill();
+            mask.color = maskColor;
+            mask.DOColor(new Color(0f, 0f, 0f, 0f), GameManager.instance.buildingDuration).SetEase(Ease.Linear);
+        }
     }
 
     public void UpdateInfo()

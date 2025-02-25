@@ -1048,6 +1048,7 @@ public class GameManager : MonoBehaviour
             // 状态 (CD)
             _buildingUpgrading[build] = true;
             build.UpdateButton();
+            build.MaskEffect();
             this.Invoke(() =>
             {
                 _buildingUpgrading[build] = false;
