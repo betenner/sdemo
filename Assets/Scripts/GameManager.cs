@@ -382,11 +382,23 @@ public class GameManager : MonoBehaviour
     [LabelText("建筑升级特效缩放")]
     public Vector3 fxBuildUpgradeScale = Vector3.one;
 
-    [LabelText("建筑升级特效偏移")]
-    public Vector3 fxBuildUpgradeOffset = Vector3.zero;
+    [LabelText("建筑升级特效偏移1")]
+    public Vector3 fxBuildUpgradeOffset1 = Vector3.zero;
 
-    [LabelText("建筑升级特效时间 (秒)"), Range(0.1f, 10f)]
-    public float fxBuildUpgradeDuration = 1.5f;
+    [LabelText("建筑升级特效1时间 (秒)"), Range(0.1f, 10f)]
+    public float fxBuildUpgradeDuration1 = 0.5f;
+
+    [LabelText("建筑升级特效偏移2")]
+    public Vector3 fxBuildUpgradeOffset2 = Vector3.zero;
+
+    [LabelText("建筑升级特效2时间 (秒)"), Range(0.1f, 10f)]
+    public float fxBuildUpgradeDuration2 = 0.5f;
+
+    [LabelText("建筑升级特效偏移3")]
+    public Vector3 fxBuildUpgradeOffset3 = Vector3.zero;
+
+    [LabelText("建筑升级特效3时间 (秒)"), Range(0.1f, 10f)]
+    public float fxBuildUpgradeDuration3 = 0.5f;
 
     [LabelText("建筑升级完成特效")]
     public GameObject fxBuildUpgradeComplete;
@@ -1081,27 +1093,45 @@ public class GameManager : MonoBehaviour
             // 建造特效
             if (fxBuildUpgrade)
             {
-                var fx = Instantiate(fxBuildUpgrade);
-                fx.transform.position = build.buildingObj.transform.position + fxBuildUpgradeOffset;
-                fx.transform.localScale = fxBuildUpgradeScale;
-                fx.SetActive(true);
+                var fx1 = Instantiate(fxBuildUpgrade);
+                fx1.transform.position = build.buildingObj.transform.position + fxBuildUpgradeOffset1;
+                fx1.transform.localScale = fxBuildUpgradeScale;
+                fx1.SetActive(true);
                 this.Invoke(() =>
                 {
-                    DestroyGameObject(fx);
-
-                    // 建造完成特效
-                    if (fxBuildUpgradeComplete)
+                    Destroy(fx1);
+                    var fx2 = Instantiate(fxBuildUpgrade);
+                    fx2.transform.position = build.buildingObj.transform.position + fxBuildUpgradeOffset2;
+                    fx2.transform.localScale = fxBuildUpgradeScale;
+                    fx2.SetActive(true);
+                    this.Invoke(() =>
                     {
-                        var fx = Instantiate(fxBuildUpgradeComplete);
-                        fx.transform.position = build.buildingObj.transform.position + fxBuildUpgradeCompleteOffset;
-                        fx.transform.localScale = fxBuildUpgradeCompleteScale;
-                        fx.SetActive(true);
+                        Destroy(fx2);
+                        var fx3 = Instantiate(fxBuildUpgrade);
+                        fx3.transform.position = build.buildingObj.transform.position + fxBuildUpgradeOffset3;
+                        fx3.transform.localScale = fxBuildUpgradeScale;
+                        fx3.SetActive(true);
                         this.Invoke(() =>
                         {
-                            DestroyGameObject(fx);
-                        }, fxBuildUpgradeCompleteDuration);
-                    }
-                }, fxBuildUpgradeDuration);
+                            Destroy(fx3);
+
+                            // 建造完成特效
+                            if (fxBuildUpgradeComplete)
+                            {
+                                var fx = Instantiate(fxBuildUpgradeComplete);
+                                fx.transform.position = build.buildingObj.transform.position + fxBuildUpgradeCompleteOffset;
+                                fx.transform.localScale = fxBuildUpgradeCompleteScale;
+                                fx.SetActive(true);
+                                this.Invoke(() =>
+                                {
+                                    Destroy(fx);
+                                }, fxBuildUpgradeCompleteDuration);
+                            }
+
+                        }, fxBuildUpgradeDuration3);
+                    }, fxBuildUpgradeDuration2);
+
+                }, fxBuildUpgradeDuration1);
             }
             SaveDataManager.SaveBuildingLevel(build);
         }

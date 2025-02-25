@@ -13537,8 +13537,12 @@ MonoBehaviour:
   fxCoinShowerScale: {x: 6, y: 6, z: 6}
   fxBuildUpgrade: {fileID: 121806, guid: 4dbaeaca9d7e967419f27723f2718287, type: 3}
   fxBuildUpgradeScale: {x: 4, y: 4, z: 4}
-  fxBuildUpgradeOffset: {x: -2, y: 3, z: 0}
-  fxBuildUpgradeDuration: 1.5
+  fxBuildUpgradeOffset1: {x: -2, y: 2, z: -1}
+  fxBuildUpgradeDuration1: 0.5
+  fxBuildUpgradeOffset2: {x: 1, y: 1, z: 1}
+  fxBuildUpgradeDuration2: 0.5
+  fxBuildUpgradeOffset3: {x: 0, y: 1.5, z: -3}
+  fxBuildUpgradeDuration3: 0.5
   fxBuildUpgradeComplete: {fileID: 137732, guid: 00dac97cdd613fe49a4eb911783ae686,
     type: 3}
   fxBuildUpgradeCompleteScale: {x: 6, y: 6, z: 6}
