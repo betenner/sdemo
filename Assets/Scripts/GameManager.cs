@@ -412,6 +412,15 @@ public class GameManager : MonoBehaviour
     [LabelText("建筑升级完成特效时间 (秒)"), Range(0.1f, 10f)]
     public float fxBuildUpgradeCompleteDuration = 1.5f;
 
+    [LabelText("飞星星结束特效")]
+    public GameObject fxStarFlyTo;
+
+    [LabelText("飞星星结束特效缩放")]
+    public Vector3 fxStarFlyToScale = Vector3.one;
+
+    [LabelText("飞星星结束特效时间 (秒)")]
+    public float fxStarFlyToDuration = 0.5f;
+
     #endregion
 
     #region 音效
@@ -1040,7 +1049,7 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// 更新等级
     /// </summary>
-    public void UpdateLevel()
+    public int UpdateLevel(bool update = true)
     {
         int level = 0;
         if (buildingList != null)
@@ -1050,7 +1059,8 @@ public class GameManager : MonoBehaviour
                 level += item.level;
             }
         }
-        UIManager.instance.lvText.text = level.ToString();
+        if (update) UIManager.instance.lvText.text = level.ToString();
+        return level;
     }
 
     public void OnBuildCardClick(BuildCard build)
@@ -1072,7 +1082,7 @@ public class GameManager : MonoBehaviour
             SetCoin(coin - build.cost);
             build.level++;
             var scale = build.GetScale();
-            build.UpdateLevel(false);
+            build.UpdateLevel(false, UIManager.instance.starFlyDuration);
             UIManager.instance.StarFly(build.buildingObj.transform);
             build.buildingObj.transform.DOKill();
             build.buildingObj.transform.DOScale(scale, buildingDuration).SetEase(Ease.InCubic);

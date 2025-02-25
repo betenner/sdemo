@@ -145,7 +145,7 @@ public class BuildCard : MonoBehaviour
     }
 
     private bool _updatingLevel = false;
-    public void UpdateLevel(bool updateScale = true)
+    public void UpdateLevel(bool updateScale = true, float levelUpdateDelay = 0f)
     {
         if (_updatingLevel) return;
         _updatingLevel = true;
@@ -164,7 +164,14 @@ public class BuildCard : MonoBehaviour
         }
         if (Application.isPlaying)
         {
-            GameManager.instance.UpdateLevel();
+            int level = GameManager.instance.UpdateLevel(levelUpdateDelay <= 0f);
+            if (levelUpdateDelay > 0f)
+            {
+                this.Invoke(() =>
+                {
+                    UIManager.instance.lvText.text = level.ToString();
+                }, levelUpdateDelay);
+            }
         }
         UpdateCost();
         if (updateScale) UpdateScale();

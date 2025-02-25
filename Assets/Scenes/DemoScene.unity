@@ -13548,6 +13548,9 @@ MonoBehaviour:
   fxBuildUpgradeCompleteScale: {x: 6, y: 6, z: 6}
   fxBuildUpgradeCompleteOffset: {x: 0, y: 5, z: 0}
   fxBuildUpgradeCompleteDuration: 1
+  fxStarFlyTo: {fileID: 106676, guid: ca7b33256c37be4429307107f715c4a4, type: 3}
+  fxStarFlyToScale: {x: 1, y: 1, z: 1}
+  fxStarFlyToDuration: 0.5
   sounds: {fileID: 2003916363}
   mainCamera: {fileID: 330585545}
   vCam1: {fileID: 1285039933}

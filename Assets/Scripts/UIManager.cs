@@ -316,6 +316,17 @@ public class UIManager : MonoBehaviour
         star.transform.DOMove(starFlyTarget.position, starFlyDuration).SetEase(easing).OnComplete(() => 
         { 
             Destroy(star);
+
+            if (GameManager.instance.fxStarFlyTo)
+            {
+                var fx = Instantiate(GameManager.instance.fxStarFlyTo);
+                fx.transform.position = starFlyTarget.position;
+                fx.transform.localScale = GameManager.instance.fxStarFlyToScale;
+                this.Invoke(() =>
+                {
+                    Destroy(fx);
+                }, GameManager.instance.fxStarFlyToDuration);
+            }
         });
     }
 
