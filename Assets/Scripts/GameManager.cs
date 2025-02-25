@@ -28,6 +28,8 @@ public class GameManager : MonoBehaviour
     private Dictionary<int, SlotItem> _slots = new();
     private Dictionary<BonusItem.BuffType, float> _buffRemainTime = new();
     private Dictionary<BonusItem.BuffType, float> _buffLastTime = new();
+    private bool _uiManagerInit = false;
+    private bool _soundManagerInit = false;
 
     public bool isQuitting { get; set; }
 
@@ -85,6 +87,16 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
+    #region 内网数值
+
+    [LabelText("购买金币数量")]
+    public long buyCoinAmount = 1000000L;
+
+    [LabelText("购买体力数量")]
+    public int buyStaminaAmount = 100;
+
+    #endregion
+
     #region Slot配置
 
     [Title("Slot配置")]
@@ -116,6 +128,9 @@ public class GameManager : MonoBehaviour
     [Title("建筑数值")]
     [LabelText("建筑列表")]
     public BuildCard[] buildingList;
+
+    [LabelText("建造时间 (秒)")]
+    public float buildingDuration = 1.5f;
     #endregion
 
     #region Bonus配置
@@ -386,6 +401,14 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
+    #region 音效
+
+    [Title("音效")]
+    [LabelText("音效配置")]
+    public SoundManager sounds;
+
+    #endregion
+
     #region 相机
     [Title("相机")]
     [LabelText("游戏相机"),]
@@ -468,9 +491,21 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        StartCoroutine(SendLoginRequest());
         _instance = this;
+        StartCoroutine(SendLoginRequest());
         _vCamController = mainCamera.GetComponent<CinemachineBrain>();
+    }
+
+    public void UIManagerInit()
+    {
+        _uiManagerInit = true;
+        if (_soundManagerInit) InitGame();
+    }
+
+    public void SoundManagerInit()
+    {
+        _soundManagerInit = true;
+        if (_uiManagerInit) InitGame();
     }
 
     void Update()
@@ -536,6 +571,7 @@ public class GameManager : MonoBehaviour
     public void InitGame()
     {
         Application.targetFrameRate = 60;
+        SoundManager.instance.bgm.Play();
         SaveDataManager.Load();
         InitSlots();
         UpdateBuildingList();
@@ -1009,7 +1045,22 @@ public class GameManager : MonoBehaviour
             build.UpdateLevel(false);
             UIManager.instance.StarFly(build.buildingObj.transform);
             build.buildingObj.transform.DOKill();
-            build.buildingObj.transform.DOScale(scale, fxBuildUpgradeDuration).SetEase(Ease.OutCubic);
+            build.buildingObj.transform.DOScale(scale, buildingDuration).SetEase(Ease.InCubic);
+
+            // 音效
+            if (sounds.building)
+            {
+                sounds.building.Play();
+                if (sounds.buildComplete)
+                {
+                    this.Invoke(() =>
+                    {
+                        sounds.buildComplete.Play();
+                    }, buildingDuration);
+                }
+            }
+
+            // 建造特效
             if (fxBuildUpgrade)
             {
                 var fx = Instantiate(fxBuildUpgrade);
@@ -1019,6 +1070,8 @@ public class GameManager : MonoBehaviour
                 this.Invoke(() =>
                 {
                     DestroyGameObject(fx);
+
+                    // 建造完成特效
                     if (fxBuildUpgradeComplete)
                     {
                         var fx = Instantiate(fxBuildUpgradeComplete);
@@ -1036,6 +1089,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
+            UIManager.instance.buyCoinAmount.text = $"x {buyCoinAmount}";
             UIManager.instance.buyCoinPanel.SetActive(true);
         }
     }

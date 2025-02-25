@@ -116,7 +116,7 @@ public class UIManager : MonoBehaviour
     {
         _instance = this;
         AddEventListeners();
-        GameManager.instance.InitGame();
+        GameManager.instance.UIManagerInit();
     }
 
     private void OnDestroy()
@@ -153,7 +153,7 @@ public class UIManager : MonoBehaviour
     {
         if (GameManager.instance.stamina <= 0)
         {
-            buyStaminaAmount.text = $"x {GameManager.instance.initStamina}";
+            buyStaminaAmount.text = $"x {GameManager.instance.buyStaminaAmount}";
             buyStaminaPanel.SetActive(true);
             return;
         }
@@ -226,13 +226,13 @@ public class UIManager : MonoBehaviour
 
     public void OnBuyStaminaButtonClick()
     {
-        GameManager.instance.SetStamina(GameManager.instance.stamina + GameManager.instance.initStamina);
+        GameManager.instance.SetStamina(GameManager.instance.stamina + GameManager.instance.buyStaminaAmount);
         buyStaminaPanel.SetActive(false);
     }
 
     public void OnBuyCoinButtonClick()
     {
-        GameManager.instance.SetCoin(GameManager.instance.coin + GameManager.instance.initCoin);
+        GameManager.instance.SetCoin(GameManager.instance.coin + GameManager.instance.buyCoinAmount);
         buyCoinPanel.SetActive(false);
     }
 
