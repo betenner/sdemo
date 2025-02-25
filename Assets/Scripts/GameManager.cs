@@ -598,6 +598,8 @@ public class GameManager : MonoBehaviour
     public void InitGame()
     {
         Application.targetFrameRate = 60;
+        UIManager.instance.buildUI.SetActive(false);
+        vCamBuild.enabled = false;
         SoundManager.instance.bgm.Play();
         SaveDataManager.Load();
         InitSlots();
