@@ -66,8 +66,11 @@ public class BuildCard : MonoBehaviour
     public GameObject upgradeCompleteEffect;
 
     [Title("效果")]
-    [LabelText("蒙板颜色")]
-    public Color maskColor = new Color(0f, 0f, 0f, 0.7f);
+    [LabelText("蒙板开始颜色")]
+    public Color maskStartColor = new Color(0f, 0f, 0f, 0.7f);
+
+    [LabelText("蒙板结束颜色")]
+    public Color maskEndColor = new Color(0f, 0f, 0f, 0.2f);
 
     [LabelText("升级完成特效缩放")]
     public Vector3 upgradeCompleteEffectScale = Vector3.one;
@@ -218,8 +221,13 @@ public class BuildCard : MonoBehaviour
         if (mask)
         {
             mask.DOKill();
-            mask.color = maskColor;
-            mask.DOColor(new Color(0f, 0f, 0f, 0f), GameManager.instance.buildingDuration).SetEase(Ease.Linear);
+            mask.color = maskStartColor;
+            mask.DOColor(maskEndColor, GameManager.instance.buildingDuration)
+                .SetEase(Ease.Linear)
+                .OnComplete(() =>
+                {
+                    mask.color = new Color(0f, 0f, 0f, 0f);
+                });
         }
     }
 
