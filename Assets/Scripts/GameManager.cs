@@ -1098,7 +1098,6 @@ public class GameManager : MonoBehaviour
             build.level++;
             var scale = build.GetScale();
             build.UpdateLevel(false, UIManager.instance.starFlyDuration);
-            UIManager.instance.StarFly(build.buildingObj.transform);
             build.buildingObj.transform.DOKill();
             build.buildingObj.transform.DOScale(scale, buildingDuration).SetEase(Ease.Linear)
                 .OnComplete(() =>
@@ -1172,6 +1171,7 @@ public class GameManager : MonoBehaviour
                             this.Invoke(() =>
                             {
                                 Destroy(fx);
+                                UIManager.instance.StarFly(build.buildingObj.transform);
                             }, fxBuildUpgradeCompleteDuration);
                         }
 

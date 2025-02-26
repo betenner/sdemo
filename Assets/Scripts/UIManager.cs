@@ -80,7 +80,7 @@ public class UIManager : MonoBehaviour
     public GameObject starPrefab;
 
     [LabelText("星星飞行时间 (秒)")]
-    public float starFlyDuration = 1f;
+    public float starFlyDuration = 2f;
 
     [LabelText("星星飞行目标")]
     public Transform starFlyTarget;
@@ -302,7 +302,7 @@ public class UIManager : MonoBehaviour
     /// </summary>
     /// <param name="fromWorld">世界起点</param>
     /// <param name="easing">缓动</param>
-    public void StarFly(Transform fromWorld, Ease easing = Ease.OutCubic)
+    public void StarFly(Transform fromWorld, Ease easing = Ease.InCubic)
     {
         if (!starPrefab) return;
         var star = Instantiate(starPrefab);

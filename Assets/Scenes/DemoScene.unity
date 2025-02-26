@@ -16119,7 +16119,7 @@ MonoBehaviour:
   buildBackButton: {fileID: 391102595}
   starPrefab: {fileID: 412808996940946682, guid: c69ea4db4a6842c419c6fc202519e3a9,
     type: 3}
-  starFlyDuration: 1
+  starFlyDuration: 1.5
   starFlyTarget: {fileID: 295102204}
   bonusText: {fileID: 1980555254}
   bonusSlider: {fileID: 1232483170}
