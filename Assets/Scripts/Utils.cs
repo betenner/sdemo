@@ -53,4 +53,12 @@ public static class Utils
         wdPos.z = 0f;
         return wdPos;
     }
+
+    public static string GetTimeMMSS(float seconds)
+    {
+        int time = (int)seconds;
+        int ss = time % 60;
+        int mm = time / 60;
+        return $"{mm:00}:{ss:00}";
+    }
 }

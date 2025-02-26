@@ -10,6 +10,9 @@ public class SoundManager : MonoBehaviour
 {
     public static SoundManager instance { get; private set; }
 
+    [LabelText("背景音乐")]
+    public AudioSource bgm;
+
     [LabelText("Slot音效")]
     public AudioSource slot;
 
@@ -37,9 +40,16 @@ public class SoundManager : MonoBehaviour
     [LabelText("Slot单次音效")]
     public AudioSource slotClick;
 
+    [LabelText("建造中音效")]
+    public AudioSource building;
+
+    [LabelText("建造完成音效")]
+    public AudioSource buildComplete;
+
     private void Awake()
     {
         instance = this;
+        GameManager.instance.SoundManagerInit();
     }
 
     private void OnDestroy()
