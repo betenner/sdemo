@@ -4585,6 +4585,46 @@ PrefabInstance:
       objectReference: {fileID: 374534353}
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
+      propertyPath: maskEndColor.a
+      value: 0.5882353
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskEndColor.b
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskEndColor.g
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskEndColor.r
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.a
+      value: 0.8627451
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.b
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.g
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.r
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
       propertyPath: levelCost.Array.data[0]
       value: 2160
       objectReference: {fileID: 0}
@@ -12196,6 +12236,46 @@ PrefabInstance:
       objectReference: {fileID: 1066447763}
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
+      propertyPath: maskEndColor.a
+      value: 0.5882353
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskEndColor.b
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskEndColor.g
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskEndColor.r
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.a
+      value: 0.8627451
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.b
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.g
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.r
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
       propertyPath: levelCost.Array.data[0]
       value: 3240
       objectReference: {fileID: 0}
@@ -18646,6 +18726,46 @@ PrefabInstance:
       objectReference: {fileID: 1126018674}
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
+      propertyPath: maskEndColor.a
+      value: 0.5882353
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskEndColor.b
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskEndColor.g
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskEndColor.r
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.a
+      value: 0.8627451
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.b
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.g
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.r
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
       propertyPath: levelCost.Array.data[0]
       value: 2880
       objectReference: {fileID: 0}
@@ -20644,6 +20764,46 @@ PrefabInstance:
       propertyPath: buildingObj
       value: 
       objectReference: {fileID: 1047329352}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskEndColor.a
+      value: 0.5882353
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskEndColor.b
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskEndColor.g
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskEndColor.r
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.a
+      value: 0.8627451
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.b
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.g
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.r
+      value: 0.2
+      objectReference: {fileID: 0}
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
       propertyPath: levelCost.Array.data[0]
@@ -34444,6 +34604,46 @@ PrefabInstance:
       propertyPath: buildingObj
       value: 
       objectReference: {fileID: 1688822280}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskEndColor.a
+      value: 0.5882353
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskEndColor.b
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskEndColor.g
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskEndColor.r
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.a
+      value: 0.8627451
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.b
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.g
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
+        type: 3}
+      propertyPath: maskStartColor.r
+      value: 0.2
+      objectReference: {fileID: 0}
     - target: {fileID: 7052644501408910615, guid: 1434ea62d14f32d4d9a16e41b7cb3e23,
         type: 3}
       propertyPath: levelCost.Array.data[0]
