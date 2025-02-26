@@ -125,13 +125,20 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
-    #region 建筑数值
-    [Title("建筑数值")]
+    #region 建筑配置
+    [Title("建筑配置")]
     [LabelText("建筑列表")]
     public BuildCard[] buildingList;
 
     [LabelText("建造时间 (秒)")]
     public float buildingDuration = 1.5f;
+
+    [LabelText("建筑升级完毕Q弹比例")]
+    public float buildUpgradeBounceFactor = 1.1f;
+
+    [LabelText("建筑升级完毕Q弹时间 (秒)")]
+    public float buildUpgradeBoundeDuration = 0.3f;
+
     #endregion
 
     #region Bonus配置
@@ -1093,7 +1100,19 @@ public class GameManager : MonoBehaviour
             build.UpdateLevel(false, UIManager.instance.starFlyDuration);
             UIManager.instance.StarFly(build.buildingObj.transform);
             build.buildingObj.transform.DOKill();
-            build.buildingObj.transform.DOScale(scale, buildingDuration).SetEase(Ease.InCubic);
+            build.buildingObj.transform.DOScale(scale, buildingDuration).SetEase(Ease.Linear)
+                .OnComplete(() =>
+                {
+                    // Q弹效果
+                    var curScale = build.buildingObj.transform.localScale;
+                    var bounceScale = buildUpgradeBounceFactor * scale;
+                    build.buildingObj.transform.DOKill();
+                    build.buildingObj.transform.DOScale(bounceScale, buildUpgradeBoundeDuration / 2f).SetEase(Ease.InCubic)
+                        .OnComplete(() =>
+                        {
+                            build.buildingObj.transform.DOScale(curScale, buildUpgradeBoundeDuration / 2f).SetEase(Ease.OutCubic);
+                        });
+                });
 
             // 音效
             if (sounds.building)

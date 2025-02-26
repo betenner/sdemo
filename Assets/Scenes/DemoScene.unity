@@ -13620,7 +13620,9 @@ MonoBehaviour:
   - {fileID: 2066597500}
   - {fileID: 1058719073}
   - {fileID: 658195378}
-  buildingDuration: 1.5
+  buildingDuration: 1.2
+  buildUpgradeBounceFactor: 1.2
+  buildUpgradeBoundeDuration: 0.2
   bonusList:
   - {fileID: 1023193679}
   - {fileID: 202073557}
@@ -13690,8 +13692,10 @@ MonoBehaviour:
   fxBuildUpgradeOffset1: {x: -2, y: 2, z: -1}
   fxBuildUpgradeDuration1: 0.5
   fxBuildUpgradeOffset2: {x: 1, y: 1, z: 1}
+  fxBuildUpgrade2StartTime: 0.3
   fxBuildUpgradeDuration2: 0.5
   fxBuildUpgradeOffset3: {x: 0, y: 1.5, z: -3}
+  fxBuildUpgrade3StartTime: 0.6
   fxBuildUpgradeDuration3: 0.5
   fxBuildUpgradeComplete: {fileID: 137732, guid: 00dac97cdd613fe49a4eb911783ae686,
     type: 3}
