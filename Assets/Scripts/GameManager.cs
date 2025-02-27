@@ -10,8 +10,6 @@ using UnityEngine.Networking;
 
 public class GameManager : MonoBehaviour
 {
-    private const float VCAM_BLEND_TIME_SLOW = 2f;
-    private const float VCAM_BLEND_TIME_FAST = 0.3f;
     private const int VCAM_PRIORITY_HIGH = 10;
     private const int VCAM_PRIORITY_MIDDLE = 7;
     private const int VCAM_PRIORITY_LOW = 5;
@@ -444,8 +442,8 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
-    #region 相机
-    [Title("相机")]
+    #region 相机配置
+    [Title("相机配置")]
     [LabelText("游戏相机"),]
     public Camera mainCamera;
 
@@ -465,6 +463,25 @@ public class GameManager : MonoBehaviour
 
     [LabelText("城建相机")]
     public CinemachineVirtualCamera vCamBuild;
+
+    [LabelText("主场景切换至城建场景过渡方式"), EnumPaging]
+    public CinemachineBlendDefinition.Style vCamBlendMainToBuildStyle = CinemachineBlendDefinition.Style.HardOut;
+    
+    [LabelText("主场景切换至城建场景过渡时间 (秒)")]
+    public float vCamBlendMainToBuildTime = 1f;
+
+    [LabelText("城建场景切换至主场景过渡方式"), EnumPaging]
+    public CinemachineBlendDefinition.Style vCamBlendBuildToMainStyle = CinemachineBlendDefinition.Style.HardOut;
+
+    [LabelText("城建场景切换至主场景过渡时间 (秒)")]
+    public float vCamBlendBuildToMainTime = 1f;
+
+    [LabelText("楼层切换过渡方式"), EnumPaging]
+    public CinemachineBlendDefinition.Style vCamBlendBlockDropStyle = CinemachineBlendDefinition.Style.Linear;
+
+    [LabelText("楼层切换过渡时间 (秒)")]
+    public float vCamBlendBlockDropTime = 2f;
+
     #endregion
 
     #region 引用
@@ -618,7 +635,7 @@ public class GameManager : MonoBehaviour
         InitSlots();
         UpdateBuildingList();
         TriggerBonus(false);
-        SetCameraBlendTime(VCAM_BLEND_TIME_SLOW);
+        SetCameraBlend(vCamBlendBlockDropTime, vCamBlendBlockDropStyle);
         CreateBlock();
     }
 
@@ -953,10 +970,10 @@ public class GameManager : MonoBehaviour
         SmoothMoveCamera(GetCurVCamTarget().position + Vector3.up * blockHeight);
     }
 
-    public void SetCameraBlendTime(float duration = 2f)
+    public void SetCameraBlend(float duration = 2f, CinemachineBlendDefinition.Style style = CinemachineBlendDefinition.Style.Linear)
     {
         if (!_vCamController) return;
-        _vCamController.m_DefaultBlend = new CinemachineBlendDefinition(CinemachineBlendDefinition.Style.Linear, duration);
+        _vCamController.m_DefaultBlend = new CinemachineBlendDefinition(style, duration);
     }
 
     private Transform GetCurVCamTarget()
@@ -1044,7 +1061,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void SwitchToBuild()
     {
-        SetCameraBlendTime(VCAM_BLEND_TIME_FAST);
+        SetCameraBlend(vCamBlendMainToBuildTime, vCamBlendMainToBuildStyle);
         if (vCamBuild) vCamBuild.enabled = true;
     }
 
@@ -1053,12 +1070,12 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void SwitchToBlock()
     {
-        SetCameraBlendTime(VCAM_BLEND_TIME_FAST);
+        SetCameraBlend(vCamBlendBuildToMainTime, vCamBlendBuildToMainStyle);
         if (vCamBuild) vCamBuild.enabled = false;
         this.Invoke(() =>
         {
-            SetCameraBlendTime(VCAM_BLEND_TIME_SLOW);
-        }, VCAM_BLEND_TIME_FAST);
+            SetCameraBlend(vCamBlendBlockDropTime, vCamBlendBlockDropStyle);
+        }, vCamBlendBuildToMainTime);
     }
 
     /// <summary>

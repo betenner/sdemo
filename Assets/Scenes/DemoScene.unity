@@ -6057,7 +6057,7 @@ MonoBehaviour:
   m_UpdateMethod: 2
   m_BlendUpdateMethod: 1
   m_DefaultBlend:
-    m_Style: 6
+    m_Style: 3
     m_Time: 2
     m_CustomCurve:
       serializedVersion: 2
@@ -13972,6 +13972,12 @@ MonoBehaviour:
   vCam2: {fileID: 1785812446}
   vcamTarget2: {fileID: 145482384}
   vCamBuild: {fileID: 1130231411}
+  vCamBlendMainToBuildStyle: 5
+  vCamBlendMainToBuildTime: 0.8
+  vCamBlendBuildToMainStyle: 5
+  vCamBlendBuildToMainTime: 0.8
+  vCamBlendBlockDropStyle: 6
+  vCamBlendBlockDropTime: 2
   ground: {fileID: 1010359677}
   hinge: {fileID: 794235167}
   pendulumMotor: {fileID: 710272631}
