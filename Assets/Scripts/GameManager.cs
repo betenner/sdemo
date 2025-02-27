@@ -1114,11 +1114,30 @@ public class GameManager : MonoBehaviour
             SetCoin(coin - build.cost);
             build.level++;
             var scale = build.GetScale();
-            build.UpdateLevel(false, UIManager.instance.starFlyDuration);
             build.buildingObj.transform.DOKill();
             build.buildingObj.transform.DOScale(scale, buildingDuration).SetEase(Ease.Linear)
                 .OnComplete(() =>
                 {
+                    // 音效
+                    if (sounds.buildComplete) sounds.buildComplete.Play();
+
+                    // 飞星星
+                    UIManager.instance.StarFly(build.buildingObj.transform);
+                    build.UpdateLevel(false, UIManager.instance.starFlyDuration);
+
+                    // 建造完成特效
+                    if (fxBuildUpgradeComplete)
+                    {
+                        var fx = Instantiate(fxBuildUpgradeComplete);
+                        fx.transform.position = build.buildingObj.transform.position + fxBuildUpgradeCompleteOffset;
+                        fx.transform.localScale = fxBuildUpgradeCompleteScale;
+                        fx.SetActive(true);
+                        this.Invoke(() =>
+                        {
+                            Destroy(fx);
+                        }, fxBuildUpgradeCompleteDuration);
+                    }
+
                     // Q弹效果
                     var curScale = build.buildingObj.transform.localScale;
                     var bounceScale = buildUpgradeBounceFactor * scale;
@@ -1131,17 +1150,7 @@ public class GameManager : MonoBehaviour
                 });
 
             // 音效
-            if (sounds.building)
-            {
-                sounds.building.Play();
-                if (sounds.buildComplete)
-                {
-                    this.Invoke(() =>
-                    {
-                        sounds.buildComplete.Play();
-                    }, buildingDuration);
-                }
-            }
+            if (sounds.building) sounds.building.Play();
 
             // 建造特效
             if (fxBuildUpgrade)
@@ -1177,21 +1186,6 @@ public class GameManager : MonoBehaviour
                     this.Invoke(() =>
                     {
                         Destroy(fx3);
-
-                        // 建造完成特效
-                        if (fxBuildUpgradeComplete)
-                        {
-                            var fx = Instantiate(fxBuildUpgradeComplete);
-                            fx.transform.position = build.buildingObj.transform.position + fxBuildUpgradeCompleteOffset;
-                            fx.transform.localScale = fxBuildUpgradeCompleteScale;
-                            fx.SetActive(true);
-                            this.Invoke(() =>
-                            {
-                                Destroy(fx);
-                                UIManager.instance.StarFly(build.buildingObj.transform);
-                            }, fxBuildUpgradeCompleteDuration);
-                        }
-
                     }, fxBuildUpgradeDuration3);
 
                 }, fxBuildUpgrade3StartTime);
