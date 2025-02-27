@@ -198,7 +198,7 @@ public class BuildCard : MonoBehaviour
         if (upgradeCompleteEffect)
         {
             var fx = Instantiate(upgradeCompleteEffect);
-            fx.transform.position = container.transform.position;
+            fx.transform.position = container.transform.position - Vector3.forward;
             fx.transform.localScale = upgradeCompleteEffectScale;
             fx.SetActive(true);
             this.Invoke(() =>
