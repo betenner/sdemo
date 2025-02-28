@@ -10,8 +10,6 @@ using UnityEngine.Networking;
 
 public class GameManager : MonoBehaviour
 {
-    private const float VCAM_BLEND_TIME_SLOW = 2f;
-    private const float VCAM_BLEND_TIME_FAST = 0.3f;
     private const int VCAM_PRIORITY_HIGH = 10;
     private const int VCAM_PRIORITY_MIDDLE = 7;
     private const int VCAM_PRIORITY_LOW = 5;
@@ -125,13 +123,20 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
-    #region 建筑数值
-    [Title("建筑数值")]
+    #region 建筑配置
+    [Title("建筑配置")]
     [LabelText("建筑列表")]
     public BuildCard[] buildingList;
 
     [LabelText("建造时间 (秒)")]
     public float buildingDuration = 1.5f;
+
+    [LabelText("建筑升级完毕Q弹比例")]
+    public float buildUpgradeBounceFactor = 1.1f;
+
+    [LabelText("建筑升级完毕Q弹时间 (秒)")]
+    public float buildUpgradeBoundeDuration = 0.3f;
+
     #endregion
 
     #region Bonus配置
@@ -391,11 +396,17 @@ public class GameManager : MonoBehaviour
     [LabelText("建筑升级特效偏移2")]
     public Vector3 fxBuildUpgradeOffset2 = Vector3.zero;
 
+    [LabelText("建筑升级特效2开始时间 (秒)")]
+    public float fxBuildUpgrade2StartTime = 0.3f;
+
     [LabelText("建筑升级特效2时间 (秒)"), Range(0.1f, 10f)]
     public float fxBuildUpgradeDuration2 = 0.5f;
 
     [LabelText("建筑升级特效偏移3")]
     public Vector3 fxBuildUpgradeOffset3 = Vector3.zero;
+
+    [LabelText("建筑升级特效3开始时间 (秒)")]
+    public float fxBuildUpgrade3StartTime = 0.6f;
 
     [LabelText("建筑升级特效3时间 (秒)"), Range(0.1f, 10f)]
     public float fxBuildUpgradeDuration3 = 0.5f;
@@ -431,8 +442,8 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
-    #region 相机
-    [Title("相机")]
+    #region 相机配置
+    [Title("相机配置")]
     [LabelText("游戏相机"),]
     public Camera mainCamera;
 
@@ -452,6 +463,25 @@ public class GameManager : MonoBehaviour
 
     [LabelText("城建相机")]
     public CinemachineVirtualCamera vCamBuild;
+
+    [LabelText("主场景切换至城建场景过渡方式"), EnumPaging]
+    public CinemachineBlendDefinition.Style vCamBlendMainToBuildStyle = CinemachineBlendDefinition.Style.HardOut;
+    
+    [LabelText("主场景切换至城建场景过渡时间 (秒)")]
+    public float vCamBlendMainToBuildTime = 1f;
+
+    [LabelText("城建场景切换至主场景过渡方式"), EnumPaging]
+    public CinemachineBlendDefinition.Style vCamBlendBuildToMainStyle = CinemachineBlendDefinition.Style.HardOut;
+
+    [LabelText("城建场景切换至主场景过渡时间 (秒)")]
+    public float vCamBlendBuildToMainTime = 1f;
+
+    [LabelText("楼层切换过渡方式"), EnumPaging]
+    public CinemachineBlendDefinition.Style vCamBlendBlockDropStyle = CinemachineBlendDefinition.Style.Linear;
+
+    [LabelText("楼层切换过渡时间 (秒)")]
+    public float vCamBlendBlockDropTime = 2f;
+
     #endregion
 
     #region 引用
@@ -605,7 +635,7 @@ public class GameManager : MonoBehaviour
         InitSlots();
         UpdateBuildingList();
         TriggerBonus(false);
-        SetCameraBlendTime(VCAM_BLEND_TIME_SLOW);
+        SetCameraBlend(vCamBlendBlockDropTime, vCamBlendBlockDropStyle);
         CreateBlock();
     }
 
@@ -940,10 +970,10 @@ public class GameManager : MonoBehaviour
         SmoothMoveCamera(GetCurVCamTarget().position + Vector3.up * blockHeight);
     }
 
-    public void SetCameraBlendTime(float duration = 2f)
+    public void SetCameraBlend(float duration = 2f, CinemachineBlendDefinition.Style style = CinemachineBlendDefinition.Style.Linear)
     {
         if (!_vCamController) return;
-        _vCamController.m_DefaultBlend = new CinemachineBlendDefinition(CinemachineBlendDefinition.Style.Linear, duration);
+        _vCamController.m_DefaultBlend = new CinemachineBlendDefinition(style, duration);
     }
 
     private Transform GetCurVCamTarget()
@@ -1031,7 +1061,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void SwitchToBuild()
     {
-        SetCameraBlendTime(VCAM_BLEND_TIME_FAST);
+        SetCameraBlend(vCamBlendMainToBuildTime, vCamBlendMainToBuildStyle);
         if (vCamBuild) vCamBuild.enabled = true;
     }
 
@@ -1040,12 +1070,12 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void SwitchToBlock()
     {
-        SetCameraBlendTime(VCAM_BLEND_TIME_FAST);
+        SetCameraBlend(vCamBlendBuildToMainTime, vCamBlendBuildToMainStyle);
         if (vCamBuild) vCamBuild.enabled = false;
         this.Invoke(() =>
         {
-            SetCameraBlendTime(VCAM_BLEND_TIME_SLOW);
-        }, VCAM_BLEND_TIME_FAST);
+            SetCameraBlend(vCamBlendBlockDropTime, vCamBlendBlockDropStyle);
+        }, vCamBlendBuildToMainTime);
     }
 
     /// <summary>
@@ -1084,23 +1114,43 @@ public class GameManager : MonoBehaviour
             SetCoin(coin - build.cost);
             build.level++;
             var scale = build.GetScale();
-            build.UpdateLevel(false, UIManager.instance.starFlyDuration);
-            UIManager.instance.StarFly(build.buildingObj.transform);
             build.buildingObj.transform.DOKill();
-            build.buildingObj.transform.DOScale(scale, buildingDuration).SetEase(Ease.InCubic);
+            build.buildingObj.transform.DOScale(scale, buildingDuration).SetEase(Ease.Linear)
+                .OnComplete(() =>
+                {
+                    // 音效
+                    if (sounds.buildComplete) sounds.buildComplete.Play();
+
+                    // 飞星星
+                    UIManager.instance.StarFly(build.buildingObj.transform);
+                    build.UpdateLevel(false, UIManager.instance.starFlyDuration);
+
+                    // 建造完成特效
+                    if (fxBuildUpgradeComplete)
+                    {
+                        var fx = Instantiate(fxBuildUpgradeComplete);
+                        fx.transform.position = build.buildingObj.transform.position + fxBuildUpgradeCompleteOffset;
+                        fx.transform.localScale = fxBuildUpgradeCompleteScale;
+                        fx.SetActive(true);
+                        this.Invoke(() =>
+                        {
+                            Destroy(fx);
+                        }, fxBuildUpgradeCompleteDuration);
+                    }
+
+                    // Q弹效果
+                    var curScale = build.buildingObj.transform.localScale;
+                    var bounceScale = buildUpgradeBounceFactor * scale;
+                    build.buildingObj.transform.DOKill();
+                    build.buildingObj.transform.DOScale(bounceScale, buildUpgradeBoundeDuration / 2f).SetEase(Ease.InCubic)
+                        .OnComplete(() =>
+                        {
+                            build.buildingObj.transform.DOScale(curScale, buildUpgradeBoundeDuration / 2f).SetEase(Ease.OutCubic);
+                        });
+                });
 
             // 音效
-            if (sounds.building)
-            {
-                sounds.building.Play();
-                if (sounds.buildComplete)
-                {
-                    this.Invoke(() =>
-                    {
-                        sounds.buildComplete.Play();
-                    }, buildingDuration);
-                }
-            }
+            if (sounds.building) sounds.building.Play();
 
             // 建造特效
             if (fxBuildUpgrade)
@@ -1112,6 +1162,11 @@ public class GameManager : MonoBehaviour
                 this.Invoke(() =>
                 {
                     Destroy(fx1);
+
+                }, fxBuildUpgradeDuration1);
+
+                this.Invoke(() =>
+                {
                     var fx2 = Instantiate(fxBuildUpgrade);
                     fx2.transform.position = build.buildingObj.transform.position + fxBuildUpgradeOffset2;
                     fx2.transform.localScale = fxBuildUpgradeScale;
@@ -1119,31 +1174,21 @@ public class GameManager : MonoBehaviour
                     this.Invoke(() =>
                     {
                         Destroy(fx2);
-                        var fx3 = Instantiate(fxBuildUpgrade);
-                        fx3.transform.position = build.buildingObj.transform.position + fxBuildUpgradeOffset3;
-                        fx3.transform.localScale = fxBuildUpgradeScale;
-                        fx3.SetActive(true);
-                        this.Invoke(() =>
-                        {
-                            Destroy(fx3);
-
-                            // 建造完成特效
-                            if (fxBuildUpgradeComplete)
-                            {
-                                var fx = Instantiate(fxBuildUpgradeComplete);
-                                fx.transform.position = build.buildingObj.transform.position + fxBuildUpgradeCompleteOffset;
-                                fx.transform.localScale = fxBuildUpgradeCompleteScale;
-                                fx.SetActive(true);
-                                this.Invoke(() =>
-                                {
-                                    Destroy(fx);
-                                }, fxBuildUpgradeCompleteDuration);
-                            }
-
-                        }, fxBuildUpgradeDuration3);
                     }, fxBuildUpgradeDuration2);
+                }, fxBuildUpgrade2StartTime);
 
-                }, fxBuildUpgradeDuration1);
+                this.Invoke(() =>
+                {
+                    var fx3 = Instantiate(fxBuildUpgrade);
+                    fx3.transform.position = build.buildingObj.transform.position + fxBuildUpgradeOffset3;
+                    fx3.transform.localScale = fxBuildUpgradeScale;
+                    fx3.SetActive(true);
+                    this.Invoke(() =>
+                    {
+                        Destroy(fx3);
+                    }, fxBuildUpgradeDuration3);
+
+                }, fxBuildUpgrade3StartTime);
             }
             SaveDataManager.SaveBuildingLevel(build);
         }

@@ -25,10 +25,10 @@ public class BuildCard : MonoBehaviour
     [LabelText("名称"), OnValueChanged("UpdateName")]
     public string buildName;
 
-    [LabelText("最大等级"), Range(1, 6), OnValueChanged("@UpdateLevel(true)")]
+    [LabelText("最大等级"), Range(1, 6), OnValueChanged("@UpdateLevel(true, 0f)")]
     public int maxLevel = 3;
 
-    [LabelText("当前等级"), Min(0), OnValueChanged("@UpdateLevel(true)")]
+    [LabelText("当前等级"), Min(0), OnValueChanged("@UpdateLevel(true, 0f)")]
     public int level = 0;
 
     [LabelText("各等级缩放")]
@@ -66,8 +66,11 @@ public class BuildCard : MonoBehaviour
     public GameObject upgradeCompleteEffect;
 
     [Title("效果")]
-    [LabelText("蒙板颜色")]
-    public Color maskColor = new Color(0f, 0f, 0f, 0.7f);
+    [LabelText("蒙板开始颜色")]
+    public Color maskStartColor = new Color(0f, 0f, 0f, 0.7f);
+
+    [LabelText("蒙板结束颜色")]
+    public Color maskEndColor = new Color(0f, 0f, 0f, 0.2f);
 
     [LabelText("升级完成特效缩放")]
     public Vector3 upgradeCompleteEffectScale = Vector3.one;
@@ -195,7 +198,7 @@ public class BuildCard : MonoBehaviour
         if (upgradeCompleteEffect)
         {
             var fx = Instantiate(upgradeCompleteEffect);
-            fx.transform.position = container.transform.position;
+            fx.transform.position = container.transform.position - Vector3.forward;
             fx.transform.localScale = upgradeCompleteEffectScale;
             fx.SetActive(true);
             this.Invoke(() =>
@@ -218,8 +221,13 @@ public class BuildCard : MonoBehaviour
         if (mask)
         {
             mask.DOKill();
-            mask.color = maskColor;
-            mask.DOColor(new Color(0f, 0f, 0f, 0f), GameManager.instance.buildingDuration).SetEase(Ease.Linear);
+            mask.color = maskStartColor;
+            mask.DOColor(maskEndColor, GameManager.instance.buildingDuration)
+                .SetEase(Ease.Linear)
+                .OnComplete(() =>
+                {
+                    mask.color = new Color(0f, 0f, 0f, 0f);
+                });
         }
     }
 
