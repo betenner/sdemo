@@ -905,9 +905,13 @@ public class GameManager : MonoBehaviour
                             var rb = lastBlock.GetComponent<Rigidbody>();
                             rb.detectCollisions = true;
                         }
-                        RaiseRope();
                         activeBlock = null;
-                        Invoke(nameof(CreateBlock), 0.1f);
+                        RaiseRope();
+                        this.Invoke(() =>
+                        {
+                            CreateBlock();
+                            SmoothMoveCamera(GetCurVCamTarget().position + Vector3.up * blockHeight);
+                        }, 0.1f);
                         UIManager.instance.EnableButtons();
                     }, slotDoneDelay);
                 });
@@ -967,7 +971,6 @@ public class GameManager : MonoBehaviour
     private void RaiseRope()
     {
         hinge.transform.position += Vector3.up * blockHeight;
-        SmoothMoveCamera(GetCurVCamTarget().position + Vector3.up * blockHeight);
     }
 
     public void SetCameraBlend(float duration = 2f, CinemachineBlendDefinition.Style style = CinemachineBlendDefinition.Style.Linear)

@@ -34,6 +34,7 @@ public class BlockController : MonoBehaviour
 
     private void Awake()
     {
+        _bounceTimes = 0;
         _rigidbody = GetComponent<Rigidbody>();
         _rigidbody.sleepThreshold = STABLE_THRESHOLD;
         if (slotMask) slotMask.enabled = true;
