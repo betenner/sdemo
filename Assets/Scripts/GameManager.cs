@@ -57,7 +57,7 @@ public class GameManager : MonoBehaviour
     public int initStamina = 100;
     public int stamina { get; private set; }
 
-    [LabelText("初始金币"), Min(1000)]
+    [LabelText("初始金币"), Min(0)]
     public int initCoin = 1000000;
     public long coin { get; private set; }
 
@@ -102,8 +102,8 @@ public class GameManager : MonoBehaviour
     [LabelText("Slot列表")]
     public SlotItem[] slotItems;
 
-    [LabelText("预定义好的Slot结果 (填写Slot ID)")]
-    public int[] predefinedSlotResults;
+    //[LabelText("预定义好的Slot结果 (填写Slot ID)")]
+    //public int[] predefinedSlotResults;
 
     /// <summary>
     /// 滚轮次数
@@ -709,7 +709,7 @@ public class GameManager : MonoBehaviour
                 if (simulated)
                 {
                     SoundManager.instance.perfect.Play();
-                    UIManager.instance.SetPopText("PERFECT");
+                    UIManager.instance.ShowPopup(null, false, false, false, true);
                     if (fxPerfectHit)
                     {
                         var fxGo = Instantiate(fxPerfectHit);
@@ -722,7 +722,7 @@ public class GameManager : MonoBehaviour
                 else
                 {
                     SoundManager.instance.good.Play();
-                    UIManager.instance.SetPopText("Good");
+                    UIManager.instance.ShowPopup(null, false, false, true, false);
                 }
 
                 lastBlock = activeBlock;
@@ -854,7 +854,7 @@ public class GameManager : MonoBehaviour
                     {
                         rewardText += $"\n{appendText}";
                     }
-                    UIManager.instance.SetPopText(rewardText);
+                    UIManager.instance.ShowPopup(rewardText, true);
 
                     // 特效
                     if (fxCoinShower)
@@ -920,7 +920,7 @@ public class GameManager : MonoBehaviour
             // 失败
             else
             {
-                UIManager.instance.SetPopText("Failed");
+                UIManager.instance.ShowPopup(null, false, true, false, false);
                 Destroy(activeBlock);
                 activeBlock = null;
                 Invoke(nameof(CreateBlock), 0.1f);

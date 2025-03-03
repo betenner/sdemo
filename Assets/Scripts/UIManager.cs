@@ -52,8 +52,26 @@ public class UIManager : MonoBehaviour
     [LabelText("倍率文本")]
     public TextMeshProUGUI betText;
 
+    [LabelText("弹出容器")]
+    public Transform popUpContainer;
+
+    [LabelText("弹出图标")]
+    public Image popIcon;
+
     [LabelText("弹出文本")]
     public TextMeshProUGUI popText;
+
+    [LabelText("弹出图片")]
+    public Image popImage;
+
+    [LabelText("Bad图片"), PreviewField]
+    public Sprite spriteBad;
+
+    [LabelText("Good图片"), PreviewField]
+    public Sprite spriteGood;
+
+    [LabelText("Perfect图片"), PreviewField]
+    public Sprite spritePerfect;
 
     [LabelText("购买体力面板")]
     public GameObject buyStaminaPanel;
@@ -201,12 +219,20 @@ public class UIManager : MonoBehaviour
         GameManager.instance.SetBet(curBet);
     }
 
-    public void SetPopText(string text)
+    public void ShowPopup(string text, bool showIcon = false, bool showBad = false, bool showGood = false, bool showPerfect = false)
     {
+        popImage.gameObject.SetActive(showBad || showGood || showPerfect);
+        popIcon.gameObject.SetActive(showIcon);
+        popText.gameObject.SetActive(!showBad && !showGood && !showPerfect);
+        Sprite sprite = null;
+        if (showBad) sprite = spriteBad;
+        else if (showGood) sprite = spriteGood;
+        else if (showPerfect) sprite = spritePerfect;
+        if (sprite != null) popImage.sprite = sprite;
         popText.text = text;
-        popText.transform.DOKill();
+        popUpContainer.DOKill();
+        popUpContainer.localScale = 0.8f * Vector3.one;
         popText.DOKill();
-        popText.transform.localScale = 0.8f * Vector3.one;
         popText.color = new Color(1f, 1f, 0f, 0f);
         popText.DOColor(Color.yellow, 0.2f).OnComplete(() =>
         {
@@ -215,11 +241,29 @@ public class UIManager : MonoBehaviour
                 popText.DOColor(new Color(1f, 1f, 0f, 0f), 0.3f);
             });
         });
-        popText.transform.DOScale(Vector3.one, 0.2f).OnComplete(() =>
+        popIcon.DOKill();
+        popIcon.color = new Color(1f, 1f, 1f, 0f);
+        popIcon.DOColor(Color.white, 0.2f).OnComplete(() =>
         {
-            popText.transform.DOScale(Vector3.one, 0.5f).OnComplete(() =>
+            popIcon.DOColor(Color.white, 0.5f).OnComplete(() =>
             {
-                popText.transform.DOScale(0.3f * Vector3.one, 0.2f);
+                popIcon.DOColor(new Color(1f, 1f, 1f, 0f), 0.3f);
+            });
+        });
+        popImage.DOKill();
+        popImage.color = new Color(1f, 1f, 1f, 0f);
+        popImage.DOColor(Color.white, 0.2f).OnComplete(() =>
+        {
+            popImage.DOColor(Color.white, 0.5f).OnComplete(() =>
+            {
+                popImage.DOColor(new Color(1f, 1f, 1f, 0f), 0.3f);
+            });
+        });
+        popUpContainer.DOScale(Vector3.one, 0.2f).OnComplete(() =>
+        {
+            popUpContainer.DOScale(Vector3.one, 0.5f).OnComplete(() =>
+            {
+                popUpContainer.DOScale(0.3f * Vector3.one, 0.2f);
             });
         });
     }
