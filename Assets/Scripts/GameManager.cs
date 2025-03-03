@@ -379,7 +379,10 @@ public class GameManager : MonoBehaviour
     public float fxCoinShowerDuration = 1f;
 
     [LabelText("金币特效缩放")]
-    public Vector3 fxCoinShowerScale = 6f * Vector3.one;
+    public Vector3 fxCoinShowerScale = 120f * Vector3.one;
+
+    [LabelText("金币特效偏移")]
+    public Vector3 fxCoinShowerOffset = 100f * Vector3.back;
 
     [LabelText("建筑升级特效")]
     public GameObject fxBuildUpgrade;
@@ -860,9 +863,10 @@ public class GameManager : MonoBehaviour
                     if (fxCoinShower)
                     {
                         var fxGo = Instantiate(fxCoinShower);
-                        fxGo.transform.SetParent(hinge);
-                        fxGo.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+                        fxGo.transform.SetParent(UIManager.instance.coinFxTarget);
+                        fxGo.transform.SetLocalPositionAndRotation(fxCoinShowerOffset, Quaternion.identity);
                         fxGo.transform.localScale = fxCoinShowerScale;
+                        //fxGo.transform.position = UIManager.instance.coinFxTarget.position;
                         fxGo.SetActive(true);
                         this.Invoke(() => DestroyGameObject(fxGo), fxCoinShowerDuration);
                     }

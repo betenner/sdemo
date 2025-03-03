@@ -37,6 +37,9 @@ public class UIManager : MonoBehaviour
     [LabelText("倍率按钮")]
     public Button betButton;
 
+    [LabelText("金币特效目标")]
+    public Transform coinFxTarget;
+
     [LabelText("主等级文本")]
     public TextMeshProUGUI lvText;
 
