@@ -57,7 +57,7 @@ public class GameManager : MonoBehaviour
     public int initStamina = 100;
     public int stamina { get; private set; }
 
-    [LabelText("初始金币"), Min(1000)]
+    [LabelText("初始金币"), Min(0)]
     public int initCoin = 1000000;
     public long coin { get; private set; }
 
@@ -102,8 +102,8 @@ public class GameManager : MonoBehaviour
     [LabelText("Slot列表")]
     public SlotItem[] slotItems;
 
-    [LabelText("预定义好的Slot结果 (填写Slot ID)")]
-    public int[] predefinedSlotResults;
+    //[LabelText("预定义好的Slot结果 (填写Slot ID)")]
+    //public int[] predefinedSlotResults;
 
     /// <summary>
     /// 滚轮次数
@@ -379,7 +379,22 @@ public class GameManager : MonoBehaviour
     public float fxCoinShowerDuration = 1f;
 
     [LabelText("金币特效缩放")]
-    public Vector3 fxCoinShowerScale = 6f * Vector3.one;
+    public Vector3 fxCoinShowerScale = 120f * Vector3.one;
+
+    [LabelText("金币特效偏移")]
+    public Vector3 fxCoinShowerOffset = 100f * Vector3.back;
+
+    [LabelText("大金币特效")]
+    public GameObject fxCoinShowerBig;
+
+    [LabelText("大金币特效时间 (秒)"), Range(0.1f, 10f)]
+    public float fxCoinShowerBigDuration = 1f;
+
+    [LabelText("大金币特效缩放")]
+    public Vector3 fxCoinShowerBigScale = 120f * Vector3.one;
+
+    [LabelText("大金币特效偏移")]
+    public Vector3 fxCoinShowerBigOffset = 100f * Vector3.back;
 
     [LabelText("建筑升级特效")]
     public GameObject fxBuildUpgrade;
@@ -709,7 +724,7 @@ public class GameManager : MonoBehaviour
                 if (simulated)
                 {
                     SoundManager.instance.perfect.Play();
-                    UIManager.instance.SetPopText("PERFECT");
+                    UIManager.instance.ShowPopup(null, false, false, false, true);
                     if (fxPerfectHit)
                     {
                         var fxGo = Instantiate(fxPerfectHit);
@@ -722,7 +737,7 @@ public class GameManager : MonoBehaviour
                 else
                 {
                     SoundManager.instance.good.Play();
-                    UIManager.instance.SetPopText("Good");
+                    UIManager.instance.ShowPopup(null, false, false, true, false);
                 }
 
                 lastBlock = activeBlock;
@@ -854,18 +869,28 @@ public class GameManager : MonoBehaviour
                     {
                         rewardText += $"\n{appendText}";
                     }
-                    UIManager.instance.SetPopText(rewardText);
+                    UIManager.instance.ShowPopup(rewardText, true);
 
                     // 特效
-                    if (fxCoinShower)
+                    if (GetBuffRemainTime(BonusItem.BuffType.DoubleCoin) <= 0f && fxCoinShower)
                     {
                         var fxGo = Instantiate(fxCoinShower);
-                        fxGo.transform.SetParent(hinge);
-                        fxGo.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+                        fxGo.transform.SetParent(UIManager.instance.coinFxTarget);
+                        fxGo.transform.SetLocalPositionAndRotation(fxCoinShowerOffset, Quaternion.identity);
                         fxGo.transform.localScale = fxCoinShowerScale;
                         fxGo.SetActive(true);
                         this.Invoke(() => DestroyGameObject(fxGo), fxCoinShowerDuration);
                     }
+                    if (GetBuffRemainTime(BonusItem.BuffType.DoubleCoin) > 0f && fxCoinShowerBig)
+                    {
+                        var fxGo = Instantiate(fxCoinShowerBig);
+                        fxGo.transform.SetParent(UIManager.instance.coinFxTarget);
+                        fxGo.transform.SetLocalPositionAndRotation(fxCoinShowerBigOffset, Quaternion.identity);
+                        fxGo.transform.localScale = fxCoinShowerBigScale;
+                        fxGo.SetActive(true);
+                        this.Invoke(() => DestroyGameObject(fxGo), fxCoinShowerBigDuration);
+                    }
+
                     if (fxSlotDone)
                     {
                         var fxSlotDoneGo = Instantiate(fxSlotDone);
@@ -905,9 +930,13 @@ public class GameManager : MonoBehaviour
                             var rb = lastBlock.GetComponent<Rigidbody>();
                             rb.detectCollisions = true;
                         }
-                        RaiseRope();
                         activeBlock = null;
-                        Invoke(nameof(CreateBlock), 0.1f);
+                        RaiseRope();
+                        this.Invoke(() =>
+                        {
+                            CreateBlock();
+                            SmoothMoveCamera(GetCurVCamTarget().position + Vector3.up * blockHeight);
+                        }, 0.1f);
                         UIManager.instance.EnableButtons();
                     }, slotDoneDelay);
                 });
@@ -916,7 +945,7 @@ public class GameManager : MonoBehaviour
             // 失败
             else
             {
-                UIManager.instance.SetPopText("Failed");
+                UIManager.instance.ShowPopup(null, false, true, false, false);
                 Destroy(activeBlock);
                 activeBlock = null;
                 Invoke(nameof(CreateBlock), 0.1f);
@@ -967,7 +996,6 @@ public class GameManager : MonoBehaviour
     private void RaiseRope()
     {
         hinge.transform.position += Vector3.up * blockHeight;
-        SmoothMoveCamera(GetCurVCamTarget().position + Vector3.up * blockHeight);
     }
 
     public void SetCameraBlend(float duration = 2f, CinemachineBlendDefinition.Style style = CinemachineBlendDefinition.Style.Linear)
