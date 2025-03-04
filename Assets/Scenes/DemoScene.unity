@@ -14151,19 +14151,19 @@ MonoBehaviour:
   fxCoinShower: {fileID: 8563599308486965117, guid: aa6f5f805cdc1db4681b551dc7328d58,
     type: 3}
   fxCoinShowerDuration: 2.5
-  fxCoinShowerScale: {x: 900, y: 900, z: 900}
+  fxCoinShowerScale: {x: 700, y: 700, z: 700}
   fxCoinShowerOffset: {x: 0, y: -800, z: -100}
   fxCoinSlotList: 02000000030000000400000007000000
   fxCoinShowerBig: {fileID: 7745574655572566353, guid: 241d526b211009041ac5c5d6f0278e3c,
     type: 3}
   fxCoinShowerBigDuration: 2.5
-  fxCoinShowerBigScale: {x: 400, y: 400, z: 400}
+  fxCoinShowerBigScale: {x: 600, y: 600, z: 600}
   fxCoinShowerBigOffset: {x: 0, y: -800, z: -100}
   fxCoinBigSlotList: 01000000
   fxCoinShowerEvent: {fileID: 4624938859564471309, guid: aba9a4e48fd265247a0a55abb9b71027,
     type: 3}
   fxCoinShowerEventDuration: 2.5
-  fxCoinShowerEventScale: {x: 400, y: 400, z: 400}
+  fxCoinShowerEventScale: {x: 600, y: 600, z: 600}
   fxCoinShowerEventOffset: {x: 0, y: -800, z: -100}
   fxCoinEventSlotList: 0500000006000000
   fxBuildUpgrade: {fileID: 121806, guid: 4dbaeaca9d7e967419f27723f2718287, type: 3}
