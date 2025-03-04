@@ -37,6 +37,9 @@ public class UIManager : MonoBehaviour
     [LabelText("倍率按钮")]
     public Button betButton;
 
+    [LabelText("金币特效目标")]
+    public Transform coinFxTarget;
+
     [LabelText("主等级文本")]
     public TextMeshProUGUI lvText;
 
@@ -52,8 +55,26 @@ public class UIManager : MonoBehaviour
     [LabelText("倍率文本")]
     public TextMeshProUGUI betText;
 
+    [LabelText("弹出容器")]
+    public Transform popUpContainer;
+
+    [LabelText("弹出图标")]
+    public Image popIcon;
+
     [LabelText("弹出文本")]
     public TextMeshProUGUI popText;
+
+    [LabelText("弹出图片")]
+    public Image popImage;
+
+    [LabelText("Bad图片"), PreviewField]
+    public Sprite spriteBad;
+
+    [LabelText("Good图片"), PreviewField]
+    public Sprite spriteGood;
+
+    [LabelText("Perfect图片"), PreviewField]
+    public Sprite spritePerfect;
 
     [LabelText("购买体力面板")]
     public GameObject buyStaminaPanel;
@@ -80,16 +101,43 @@ public class UIManager : MonoBehaviour
     public GameObject starPrefab;
 
     [LabelText("星星飞行时间 (秒)")]
-    public float starFlyDuration = 1f;
+    public float starFlyDuration = 2f;
 
     [LabelText("星星飞行目标")]
     public Transform starFlyTarget;
+
+    [LabelText("Bonus文本")]
+    public TextMeshProUGUI bonusText;
+
+    [LabelText("Bonus进度条")]
+    public Slider bonusSlider;
+
+    [LabelText("Buff: 双倍金币")]
+    public GameObject buffDoubleCoin;
+
+    [LabelText("Buff: 双倍金币时间")]
+    public TextMeshProUGUI buffDoubleCoinTime;
+
+    [LabelText("Buff: 超级倍率")]
+    public GameObject buffSuperBet;
+
+    [LabelText("Buff: 超级倍率时间")]
+    public TextMeshProUGUI buffSuperBetTime;
+
+    [LabelText("清除数据面板")]
+    public GameObject clearDataPanel;
+
+    [LabelText("清除数据按钮")]
+    public Button clearDataButton;
+
+    [LabelText("执行清除据按钮")]
+    public Button doClearDataButton;
 
     private void Awake()
     {
         _instance = this;
         AddEventListeners();
-        GameManager.instance.InitGame();
+        GameManager.instance.UIManagerInit();
     }
 
     private void OnDestroy()
@@ -106,6 +154,8 @@ public class UIManager : MonoBehaviour
         buyCoinButton.onClick.AddListener(OnBuyCoinButtonClick);
         buildButton.onClick.AddListener(OnBuildButtonClick);
         buildBackButton.onClick.AddListener(OnBuildBackButtonClick);
+        clearDataButton.onClick.AddListener(OnClearDataButtonClick);
+        doClearDataButton.onClick.AddListener(OnDoClearDataButtonClick);
     }
 
     public void RemoveEventListeners()
@@ -116,37 +166,76 @@ public class UIManager : MonoBehaviour
         buyCoinButton.onClick.RemoveAllListeners();
         buildButton.onClick.RemoveAllListeners();
         buildBackButton.onClick.RemoveAllListeners();
+        clearDataButton.onClick.RemoveAllListeners();
+        doClearDataButton.onClick.RemoveAllListeners();
     }
 
     public void OnDropButtonClick()
     {
         if (GameManager.instance.stamina <= 0)
         {
-            buyStaminaAmount.text = $"x {GameManager.instance.initStamina}";
+            buyStaminaAmount.text = $"x {GameManager.instance.buyStaminaAmount}";
             buyStaminaPanel.SetActive(true);
             return;
         }
         GameManager.instance.SetStamina(GameManager.instance.stamina - GameManager.instance.bet);
         GameManager.instance.SetBet(GameManager.instance.bet);
         GameManager.instance.DropActiveBlock();
+
+        Debug.Log($"总次数: {GameManager.instance.slotRollTimes}");
+        GameManager.instance.IncSlotRollTime(false);
     }
 
     public void OnBetButtonClick()
     {
         var curBet = GameManager.instance.bet;
         var curStamina = GameManager.instance.stamina;
-        var maxBet = Mathf.Min(curStamina, GameManager.instance.maxBetNormal);
+        var theoryMaxBet = GameManager.instance.maxBetNormal;
+        if (GameManager.instance.HasBuff(BonusItem.BuffType.SuperBet))
+        {
+            theoryMaxBet = GameManager.instance.maxBetBuff2;
+        }
+        var maxBet = Mathf.Min(curStamina, theoryMaxBet);
         if (curBet >= maxBet) curBet = 1;
-        else curBet++;
+        else
+        {
+            if (GameManager.instance.HasBuff(BonusItem.BuffType.SuperBet))
+            {
+                if (curBet == GameManager.instance.maxBetNormal)
+                {
+                    curBet = GameManager.instance.maxBetBuff1;
+                }
+                else if (curBet == GameManager.instance.maxBetBuff1)
+                {
+                    curBet = GameManager.instance.maxBetBuff2;
+                }
+                else
+                {
+                    curBet++;
+                }
+            }
+            else
+            {
+                curBet++;
+            }
+        }
         GameManager.instance.SetBet(curBet);
     }
 
-    public void SetPopText(string text)
+    public void ShowPopup(string text, bool showIcon = false, bool showBad = false, bool showGood = false, bool showPerfect = false)
     {
+        popImage.gameObject.SetActive(showBad || showGood || showPerfect);
+        popIcon.gameObject.SetActive(showIcon);
+        popText.gameObject.SetActive(!showBad && !showGood && !showPerfect);
+        Sprite sprite = null;
+        if (showBad) sprite = spriteBad;
+        else if (showGood) sprite = spriteGood;
+        else if (showPerfect) sprite = spritePerfect;
+        if (sprite != null) popImage.sprite = sprite;
         popText.text = text;
-        popText.transform.DOKill();
+        popUpContainer.DOKill();
+        popUpContainer.localScale = 0.8f * Vector3.one;
         popText.DOKill();
-        popText.transform.localScale = 0.8f * Vector3.one;
         popText.color = new Color(1f, 1f, 0f, 0f);
         popText.DOColor(Color.yellow, 0.2f).OnComplete(() =>
         {
@@ -155,24 +244,42 @@ public class UIManager : MonoBehaviour
                 popText.DOColor(new Color(1f, 1f, 0f, 0f), 0.3f);
             });
         });
-        popText.transform.DOScale(Vector3.one, 0.2f).OnComplete(() =>
+        popIcon.DOKill();
+        popIcon.color = new Color(1f, 1f, 1f, 0f);
+        popIcon.DOColor(Color.white, 0.2f).OnComplete(() =>
         {
-            popText.transform.DOScale(Vector3.one, 0.5f).OnComplete(() =>
+            popIcon.DOColor(Color.white, 0.5f).OnComplete(() =>
             {
-                popText.transform.DOScale(0.3f * Vector3.one, 0.2f);
+                popIcon.DOColor(new Color(1f, 1f, 1f, 0f), 0.3f);
+            });
+        });
+        popImage.DOKill();
+        popImage.color = new Color(1f, 1f, 1f, 0f);
+        popImage.DOColor(Color.white, 0.2f).OnComplete(() =>
+        {
+            popImage.DOColor(Color.white, 0.5f).OnComplete(() =>
+            {
+                popImage.DOColor(new Color(1f, 1f, 1f, 0f), 0.3f);
+            });
+        });
+        popUpContainer.DOScale(Vector3.one, 0.2f).OnComplete(() =>
+        {
+            popUpContainer.DOScale(Vector3.one, 0.5f).OnComplete(() =>
+            {
+                popUpContainer.DOScale(0.3f * Vector3.one, 0.2f);
             });
         });
     }
 
     public void OnBuyStaminaButtonClick()
     {
-        GameManager.instance.SetStamina(GameManager.instance.stamina + GameManager.instance.initStamina);
+        GameManager.instance.SetStamina(GameManager.instance.stamina + GameManager.instance.buyStaminaAmount);
         buyStaminaPanel.SetActive(false);
     }
 
     public void OnBuyCoinButtonClick()
     {
-        GameManager.instance.SetCoin(GameManager.instance.coin + GameManager.instance.initCoin);
+        GameManager.instance.SetCoin(GameManager.instance.coin + GameManager.instance.buyCoinAmount);
         buyCoinPanel.SetActive(false);
     }
 
@@ -186,6 +293,23 @@ public class UIManager : MonoBehaviour
     {
         GameManager.instance.SwitchToBlock();
         SwitchToBlockUI();
+    }
+
+    public void OnClearDataButtonClick()
+    {
+        clearDataPanel.SetActive(true);
+    }
+
+    public void OnDoClearDataButtonClick()
+    {
+        GameManager.instance.isQuitting = true;
+        PlayerPrefs.DeleteAll();
+        PlayerPrefs.Save();
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 
     public void DisableButtons()
@@ -225,7 +349,7 @@ public class UIManager : MonoBehaviour
     /// </summary>
     /// <param name="fromWorld">世界起点</param>
     /// <param name="easing">缓动</param>
-    public void StarFly(Transform fromWorld, Ease easing = Ease.OutCubic)
+    public void StarFly(Transform fromWorld, Ease easing = Ease.InCubic)
     {
         if (!starPrefab) return;
         var star = Instantiate(starPrefab);
@@ -239,6 +363,23 @@ public class UIManager : MonoBehaviour
         star.transform.DOMove(starFlyTarget.position, starFlyDuration).SetEase(easing).OnComplete(() => 
         { 
             Destroy(star);
+
+            if (GameManager.instance.fxStarFlyTo)
+            {
+                var fx = Instantiate(GameManager.instance.fxStarFlyTo);
+                fx.transform.position = starFlyTarget.position;
+                fx.transform.localScale = GameManager.instance.fxStarFlyToScale;
+                this.Invoke(() =>
+                {
+                    Destroy(fx);
+                }, GameManager.instance.fxStarFlyToDuration);
+            }
         });
+    }
+
+    public void UpdateBonus(int curPoint, int needPoint)
+    {
+        bonusText.text = $"Bonus: {curPoint} / {needPoint}";
+        bonusSlider.value = (float)curPoint / needPoint;
     }
 }

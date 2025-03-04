@@ -8,6 +8,7 @@ public class BlockController : MonoBehaviour
     public SpriteMask slotMask;
 
     private const float STABLE_THRESHOLD = 0.01f;
+    private const float MAX_WAITING_TIME = 3f;
     
     public Action<GameObject, bool> onCollisionEnd;
 
@@ -31,9 +32,11 @@ public class BlockController : MonoBehaviour
     private float _simulateYSpeed = 0f;
     private GameObject _simulateLastBlock;
     private int _bounceTimes = 0;
+    private float _firstCollisionTime = 0f;
 
     private void Awake()
     {
+        _bounceTimes = 0;
         _rigidbody = GetComponent<Rigidbody>();
         _rigidbody.sleepThreshold = STABLE_THRESHOLD;
         if (slotMask) slotMask.enabled = true;
@@ -51,12 +54,21 @@ public class BlockController : MonoBehaviour
                 _rigidbody.isKinematic = true;
                 onCollisionEnd?.Invoke(_lastCollideObject, false);
             }
+
+            // 超时处理
+            else if (Time.time - _firstCollisionTime >= MAX_WAITING_TIME)
+            {
+                _waitForCollisionEnd = false;
+                _rigidbody.isKinematic = true;
+                onCollisionEnd?.Invoke(_lastCollideObject, false);
+            }
         }
     }
 
     private void FixedUpdate()
     {
         if (GameManager.instance.activeBlock != gameObject) return;
+
         if (_simulatingPerfectDrop)
         {
             bool end = false;
@@ -80,8 +92,10 @@ public class BlockController : MonoBehaviour
     {
         if (GameManager.instance.activeBlock != gameObject) return;
 
-        // 碰地处理
-        if (collision.gameObject == GameManager.instance.ground && GameManager.instance.lastBlock != null)
+        if (_firstCollisionTime <= 0f) _firstCollisionTime = Time.time;
+
+        // 失败处理
+        if (collision.gameObject != GameManager.instance.lastBlock && GameManager.instance.lastBlock != null)
         {
             _waitForCollisionEnd = false;
             onCollisionEnd?.Invoke(collision.gameObject, false);

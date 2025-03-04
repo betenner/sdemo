@@ -3,25 +3,34 @@ using DG.Tweening;
 using Sirenix.OdinInspector;
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using BEGroup.Utility;
+using UnityEngine.Networking;
 
 public class GameManager : MonoBehaviour
 {
-    private const float VCAM_BLEND_TIME_SLOW = 2f;
-    private const float VCAM_BLEND_TIME_FAST = 0.3f;
     private const int VCAM_PRIORITY_HIGH = 10;
     private const int VCAM_PRIORITY_MIDDLE = 7;
     private const int VCAM_PRIORITY_LOW = 5;
     private const float GROUND_HEIGHT = 1.75f;
 
+    private const float BUFF_DOUBLE_COIN_MULTIPLIER = 2f;
+    private const int BUFF_SUPER_BET_MAX_BET = 20;
+    private const int BUFF_SUPER_BET_ADD_BET = 10;
+
     private static GameManager _instance;
     public static GameManager instance => _instance;
 
-    public int level { get; private set; }
-
     private WeightList<int> _slotWeights = new();
     private Dictionary<int, SlotItem> _slots = new();
+    private Dictionary<BonusItem.BuffType, float> _buffRemainTime = new();
+    private Dictionary<BonusItem.BuffType, float> _buffLastTime = new();
+    private bool _uiManagerInit = false;
+    private bool _soundManagerInit = false;
+    private Dictionary<BuildCard, bool> _buildingUpgrading = new();
+
+    public bool isQuitting { get; set; }
 
     #region 全局数值
     [Title("全局数值")]
@@ -48,12 +57,9 @@ public class GameManager : MonoBehaviour
     public int initStamina = 100;
     public int stamina { get; private set; }
 
-    [LabelText("初始金币"), Min(1000)]
+    [LabelText("初始金币"), Min(0)]
     public int initCoin = 1000000;
     public long coin { get; private set; }
-
-    [LabelText("基础奖励"), Min(1L)]
-    public int baseReward = 1000;
 
     [LabelText("完美下落额外倍率")]
     public float perfectMultiplier = 10f;
@@ -61,8 +67,11 @@ public class GameManager : MonoBehaviour
     [LabelText("正常最大倍率"), Range(1, 20)]
     public int maxBetNormal = 5;
 
-    [LabelText("Buff时最大倍率"), Range(1, 50)]
-    public int maxBetBuff = 20;
+    [LabelText("Buff时最大倍率1"), Range(1, 50)]
+    public int maxBetBuff1 = 10;
+
+    [LabelText("Buff时最大倍率2"), Range(1, 50)]
+    public int maxBetBuff2 = 20;
 
     [LabelText("倍率按钮样式"), PreviewField]
     public Sprite betButtonStyle;
@@ -77,14 +86,24 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
+    #region 内网数值
+
+    [LabelText("购买金币数量")]
+    public long buyCoinAmount = 1000000L;
+
+    [LabelText("购买体力数量")]
+    public int buyStaminaAmount = 100;
+
+    #endregion
+
     #region Slot配置
 
     [Title("Slot配置")]
     [LabelText("Slot列表")]
     public SlotItem[] slotItems;
 
-    [LabelText("预定义好的Slot结果 (填写Slot ID)")]
-    public int[] predefinedSlotResults;
+    //[LabelText("预定义好的Slot结果 (填写Slot ID)")]
+    //public int[] predefinedSlotResults;
 
     /// <summary>
     /// 滚轮次数
@@ -104,10 +123,55 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
-    #region 建筑数值
-    [Title("建筑数值")]
+    #region 建筑配置
+    [Title("建筑配置")]
     [LabelText("建筑列表")]
     public BuildCard[] buildingList;
+
+    [LabelText("建造时间 (秒)")]
+    public float buildingDuration = 1.5f;
+
+    [LabelText("建筑升级完毕Q弹比例")]
+    public float buildUpgradeBounceFactor = 1.1f;
+
+    [LabelText("建筑升级完毕Q弹时间 (秒)")]
+    public float buildUpgradeBoundeDuration = 0.3f;
+
+    #endregion
+
+    #region Bonus配置
+    [Title("Bonus配置")]
+    [LabelText("Bonus列表")]
+    public BonusItem[] bonusList;
+
+    public void SetBonusIndex(int index, bool save = true)
+    {
+        bonusIndex = index;
+        if (save) SaveDataManager.SaveBonusIndex();
+    }
+
+    public int bonusIndex { get; private set; } = 0;
+    
+    public void SetBonusPrg(int prg, bool save = true)
+    {
+        bonusPrg = prg;
+        if (save) SaveDataManager.SaveBonusPrg();
+    }
+    public int bonusPrg { get; private set; } = 0;
+
+    public float GetBuffRemainTime(BonusItem.BuffType type)
+    {
+        if (_buffRemainTime.TryGetValue(type, out var time)) return time;
+        return 0f;
+    }
+
+    public void SetBuffRemainTime(BonusItem.BuffType type, float time, bool save = true)
+    {
+        _buffRemainTime[type] = time;
+        _buffLastTime[type] = -1f;
+        if (save) SaveDataManager.SaveBuffRemainTime();
+    }
+
     #endregion
 
     #region 单摆数值
@@ -315,7 +379,22 @@ public class GameManager : MonoBehaviour
     public float fxCoinShowerDuration = 1f;
 
     [LabelText("金币特效缩放")]
-    public Vector3 fxCoinShowerScale = 6f * Vector3.one;
+    public Vector3 fxCoinShowerScale = 120f * Vector3.one;
+
+    [LabelText("金币特效偏移")]
+    public Vector3 fxCoinShowerOffset = 100f * Vector3.back;
+
+    [LabelText("大金币特效")]
+    public GameObject fxCoinShowerBig;
+
+    [LabelText("大金币特效时间 (秒)"), Range(0.1f, 10f)]
+    public float fxCoinShowerBigDuration = 1f;
+
+    [LabelText("大金币特效缩放")]
+    public Vector3 fxCoinShowerBigScale = 120f * Vector3.one;
+
+    [LabelText("大金币特效偏移")]
+    public Vector3 fxCoinShowerBigOffset = 100f * Vector3.back;
 
     [LabelText("建筑升级特效")]
     public GameObject fxBuildUpgrade;
@@ -323,11 +402,29 @@ public class GameManager : MonoBehaviour
     [LabelText("建筑升级特效缩放")]
     public Vector3 fxBuildUpgradeScale = Vector3.one;
 
-    [LabelText("建筑升级特效偏移")]
-    public Vector3 fxBuildUpgradeOffset = Vector3.zero;
+    [LabelText("建筑升级特效偏移1")]
+    public Vector3 fxBuildUpgradeOffset1 = Vector3.zero;
 
-    [LabelText("建筑升级特效时间 (秒)"), Range(0.1f, 10f)]
-    public float fxBuildUpgradeDuration = 1.5f;
+    [LabelText("建筑升级特效1时间 (秒)"), Range(0.1f, 10f)]
+    public float fxBuildUpgradeDuration1 = 0.5f;
+
+    [LabelText("建筑升级特效偏移2")]
+    public Vector3 fxBuildUpgradeOffset2 = Vector3.zero;
+
+    [LabelText("建筑升级特效2开始时间 (秒)")]
+    public float fxBuildUpgrade2StartTime = 0.3f;
+
+    [LabelText("建筑升级特效2时间 (秒)"), Range(0.1f, 10f)]
+    public float fxBuildUpgradeDuration2 = 0.5f;
+
+    [LabelText("建筑升级特效偏移3")]
+    public Vector3 fxBuildUpgradeOffset3 = Vector3.zero;
+
+    [LabelText("建筑升级特效3开始时间 (秒)")]
+    public float fxBuildUpgrade3StartTime = 0.6f;
+
+    [LabelText("建筑升级特效3时间 (秒)"), Range(0.1f, 10f)]
+    public float fxBuildUpgradeDuration3 = 0.5f;
 
     [LabelText("建筑升级完成特效")]
     public GameObject fxBuildUpgradeComplete;
@@ -341,10 +438,27 @@ public class GameManager : MonoBehaviour
     [LabelText("建筑升级完成特效时间 (秒)"), Range(0.1f, 10f)]
     public float fxBuildUpgradeCompleteDuration = 1.5f;
 
+    [LabelText("飞星星结束特效")]
+    public GameObject fxStarFlyTo;
+
+    [LabelText("飞星星结束特效缩放")]
+    public Vector3 fxStarFlyToScale = Vector3.one;
+
+    [LabelText("飞星星结束特效时间 (秒)")]
+    public float fxStarFlyToDuration = 0.5f;
+
     #endregion
 
-    #region 相机
-    [Title("相机")]
+    #region 音效
+
+    [Title("音效")]
+    [LabelText("音效配置")]
+    public SoundManager sounds;
+
+    #endregion
+
+    #region 相机配置
+    [Title("相机配置")]
     [LabelText("游戏相机"),]
     public Camera mainCamera;
 
@@ -364,6 +478,25 @@ public class GameManager : MonoBehaviour
 
     [LabelText("城建相机")]
     public CinemachineVirtualCamera vCamBuild;
+
+    [LabelText("主场景切换至城建场景过渡方式"), EnumPaging]
+    public CinemachineBlendDefinition.Style vCamBlendMainToBuildStyle = CinemachineBlendDefinition.Style.HardOut;
+    
+    [LabelText("主场景切换至城建场景过渡时间 (秒)")]
+    public float vCamBlendMainToBuildTime = 1f;
+
+    [LabelText("城建场景切换至主场景过渡方式"), EnumPaging]
+    public CinemachineBlendDefinition.Style vCamBlendBuildToMainStyle = CinemachineBlendDefinition.Style.HardOut;
+
+    [LabelText("城建场景切换至主场景过渡时间 (秒)")]
+    public float vCamBlendBuildToMainTime = 1f;
+
+    [LabelText("楼层切换过渡方式"), EnumPaging]
+    public CinemachineBlendDefinition.Style vCamBlendBlockDropStyle = CinemachineBlendDefinition.Style.Linear;
+
+    [LabelText("楼层切换过渡时间 (秒)")]
+    public float vCamBlendBlockDropTime = 2f;
+
     #endregion
 
     #region 引用
@@ -427,11 +560,26 @@ public class GameManager : MonoBehaviour
     {
         _instance = this;
         SdkManager.instance.InitFB();
+        StartCoroutine(SendLoginRequest());
         _vCamController = mainCamera.GetComponent<CinemachineBrain>();
+    }
+
+    public void UIManagerInit()
+    {
+        _uiManagerInit = true;
+        if (_soundManagerInit) InitGame();
+    }
+
+    public void SoundManagerInit()
+    {
+        _soundManagerInit = true;
+        if (_uiManagerInit) InitGame();
     }
 
     void Update()
     {
+        if (isQuitting) return;
+
         if (_lastGravity != gravity)
         {
             _lastGravity = gravity;
@@ -451,11 +599,18 @@ public class GameManager : MonoBehaviour
                 UIManager.instance.coinText.text = _coinSliderTargetValue.ToString("#,0");
             }
         }
+
+        UpdateBuff();
     }
 
     private void OnDestroy()
     {
         _instance = null;
+    }
+
+    public bool IsBuildingUpgrading(BuildCard build)
+    {
+        return _buildingUpgrading.TryGetValue(build, out var result) && result;
     }
 
     private void SetupRope()
@@ -489,10 +644,14 @@ public class GameManager : MonoBehaviour
     public void InitGame()
     {
         Application.targetFrameRate = 60;
+        UIManager.instance.buildUI.SetActive(false);
+        vCamBuild.enabled = false;
+        SoundManager.instance.bgm.Play();
         SaveDataManager.Load();
         InitSlots();
         UpdateBuildingList();
-        SetCameraBlendTime(VCAM_BLEND_TIME_SLOW);
+        TriggerBonus(false);
+        SetCameraBlend(vCamBlendBlockDropTime, vCamBlendBlockDropStyle);
         CreateBlock();
     }
 
@@ -566,7 +725,7 @@ public class GameManager : MonoBehaviour
                 if (simulated)
                 {
                     SoundManager.instance.perfect.Play();
-                    UIManager.instance.SetPopText("PERFECT");
+                    UIManager.instance.ShowPopup(null, false, false, false, true);
                     if (fxPerfectHit)
                     {
                         var fxGo = Instantiate(fxPerfectHit);
@@ -579,7 +738,7 @@ public class GameManager : MonoBehaviour
                 else
                 {
                     SoundManager.instance.good.Play();
-                    UIManager.instance.SetPopText("Good");
+                    UIManager.instance.ShowPopup(null, false, false, true, false);
                 }
 
                 lastBlock = activeBlock;
@@ -668,10 +827,34 @@ public class GameManager : MonoBehaviour
                     if (controller.slotController.slot2) controller.slotController.slot2.maskInteraction = SpriteMaskInteraction.None;
                     if (controller.slotController.slot3) controller.slotController.slot3.maskInteraction = SpriteMaskInteraction.None;
 
-                    // TODO slot id
+                    // 特殊Slot类型
+                    string appendText = null;
+                    if (_slots.TryGetValue(slotId, out var slot))
+                    {
+                        Debug.Log($"Slot类型: {slot.slotType}");
+                        switch (slot.slotType)
+                        {
+                            case SlotItem.SlotType.Robbery:
+                                // TODO: 偷盗玩法
+                                break;
+
+                            case SlotItem.SlotType.Sabotage:
+                                // TODO: 破坏玩法
+                                break;
+
+                            case SlotItem.SlotType.Bonus:
+                                appendText = TriggerBonus();
+                                break;
+                        }
+                    }
+
                     // 奖励
                     var multiplier = bet * (simulated ? perfectMultiplier : 1f);
-                    var reward = baseReward * multiplier;
+
+                    // 双倍金币
+                    if (HasBuff(BonusItem.BuffType.DoubleCoin)) multiplier *= BUFF_DOUBLE_COIN_MULTIPLIER;
+
+                    var reward = slot.baseBonus * multiplier;
                     SetCoin(coin + (long)reward);
                     SoundManager.instance.coin.Play();
                     if (slotId < 2)
@@ -682,18 +865,33 @@ public class GameManager : MonoBehaviour
                     {
                         SoundManager.instance.rewardBig.Play();
                     }
-                    UIManager.instance.SetPopText($"+{(long)reward:#,0}");
+                    string rewardText = $"+{(long)reward:#,0}";
+                    if (!string.IsNullOrEmpty(appendText))
+                    {
+                        rewardText += $"\n{appendText}";
+                    }
+                    UIManager.instance.ShowPopup(rewardText, true);
 
                     // 特效
-                    if (fxCoinShower)
+                    if (GetBuffRemainTime(BonusItem.BuffType.DoubleCoin) <= 0f && fxCoinShower)
                     {
                         var fxGo = Instantiate(fxCoinShower);
-                        fxGo.transform.SetParent(hinge);
-                        fxGo.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+                        fxGo.transform.SetParent(UIManager.instance.coinFxTarget);
+                        fxGo.transform.SetLocalPositionAndRotation(fxCoinShowerOffset, Quaternion.identity);
                         fxGo.transform.localScale = fxCoinShowerScale;
                         fxGo.SetActive(true);
                         this.Invoke(() => DestroyGameObject(fxGo), fxCoinShowerDuration);
                     }
+                    if (GetBuffRemainTime(BonusItem.BuffType.DoubleCoin) > 0f && fxCoinShowerBig)
+                    {
+                        var fxGo = Instantiate(fxCoinShowerBig);
+                        fxGo.transform.SetParent(UIManager.instance.coinFxTarget);
+                        fxGo.transform.SetLocalPositionAndRotation(fxCoinShowerBigOffset, Quaternion.identity);
+                        fxGo.transform.localScale = fxCoinShowerBigScale;
+                        fxGo.SetActive(true);
+                        this.Invoke(() => DestroyGameObject(fxGo), fxCoinShowerBigDuration);
+                    }
+
                     if (fxSlotDone)
                     {
                         var fxSlotDoneGo = Instantiate(fxSlotDone);
@@ -733,9 +931,13 @@ public class GameManager : MonoBehaviour
                             var rb = lastBlock.GetComponent<Rigidbody>();
                             rb.detectCollisions = true;
                         }
-                        RaiseRope();
                         activeBlock = null;
-                        Invoke(nameof(CreateBlock), 0.1f);
+                        RaiseRope();
+                        this.Invoke(() =>
+                        {
+                            CreateBlock();
+                            SmoothMoveCamera(GetCurVCamTarget().position + Vector3.up * blockHeight);
+                        }, 0.1f);
                         UIManager.instance.EnableButtons();
                     }, slotDoneDelay);
                 });
@@ -744,7 +946,7 @@ public class GameManager : MonoBehaviour
             // 失败
             else
             {
-                UIManager.instance.SetPopText("Failed");
+                UIManager.instance.ShowPopup(null, false, true, false, false);
                 Destroy(activeBlock);
                 activeBlock = null;
                 Invoke(nameof(CreateBlock), 0.1f);
@@ -795,13 +997,12 @@ public class GameManager : MonoBehaviour
     private void RaiseRope()
     {
         hinge.transform.position += Vector3.up * blockHeight;
-        SmoothMoveCamera(GetCurVCamTarget().position + Vector3.up * blockHeight);
     }
 
-    public void SetCameraBlendTime(float duration = 2f)
+    public void SetCameraBlend(float duration = 2f, CinemachineBlendDefinition.Style style = CinemachineBlendDefinition.Style.Linear)
     {
         if (!_vCamController) return;
-        _vCamController.m_DefaultBlend = new CinemachineBlendDefinition(CinemachineBlendDefinition.Style.Linear, duration);
+        _vCamController.m_DefaultBlend = new CinemachineBlendDefinition(style, duration);
     }
 
     private Transform GetCurVCamTarget()
@@ -832,7 +1033,7 @@ public class GameManager : MonoBehaviour
         Destroy(go);
     }
 
-    public void SetCoin(long value, float transTime = 1f)
+    public void SetCoin(long value, float transTime = 1f, bool save = true)
     {
         if (transTime > 0f)
         {
@@ -848,18 +1049,18 @@ public class GameManager : MonoBehaviour
             UIManager.instance.coinText.text = value.ToString("#,0");
         }
         coin = value;
-        SaveDataManager.SaveCoin();
+        if (save) SaveDataManager.SaveCoin();
         UpdateBuildingList();
     }
 
-    public void SetStamina(int value)
+    public void SetStamina(int value, bool save = true)
     {
         stamina = value;
         UIManager.instance.staminaText.text = value.ToString();
-        SaveDataManager.SaveStamina();
+        if (save) SaveDataManager.SaveStamina();
     }
 
-    public void SetBet(int value)
+    public void SetBet(int value, bool save = true)
     {
         if (value > stamina) value = stamina;
         if (value <= 0)
@@ -869,7 +1070,7 @@ public class GameManager : MonoBehaviour
         }
         bet = value;
         UIManager.instance.betText.text = $"BET x{value}";
-        if (bet >= maxBetBuff)
+        if (bet >= maxBetBuff1)
         {
             UIManager.instance.betButtonImage.sprite = maxBetBuffButtonStyle;
         }
@@ -881,7 +1082,7 @@ public class GameManager : MonoBehaviour
         {
             UIManager.instance.betButtonImage.sprite = betButtonStyle;
         }
-        SaveDataManager.SaveBet();
+        if (save) SaveDataManager.SaveBet();
     }
 
     /// <summary>
@@ -889,7 +1090,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void SwitchToBuild()
     {
-        SetCameraBlendTime(VCAM_BLEND_TIME_FAST);
+        SetCameraBlend(vCamBlendMainToBuildTime, vCamBlendMainToBuildStyle);
         if (vCamBuild) vCamBuild.enabled = true;
     }
 
@@ -898,18 +1099,18 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void SwitchToBlock()
     {
-        SetCameraBlendTime(VCAM_BLEND_TIME_FAST);
+        SetCameraBlend(vCamBlendBuildToMainTime, vCamBlendBuildToMainStyle);
         if (vCamBuild) vCamBuild.enabled = false;
         this.Invoke(() =>
         {
-            SetCameraBlendTime(VCAM_BLEND_TIME_SLOW);
-        }, VCAM_BLEND_TIME_FAST);
+            SetCameraBlend(vCamBlendBlockDropTime, vCamBlendBlockDropStyle);
+        }, vCamBlendBuildToMainTime);
     }
 
     /// <summary>
     /// 更新等级
     /// </summary>
-    public void UpdateLevel()
+    public int UpdateLevel(bool update = true)
     {
         int level = 0;
         if (buildingList != null)
@@ -919,29 +1120,41 @@ public class GameManager : MonoBehaviour
                 level += item.level;
             }
         }
-        UIManager.instance.lvText.text = level.ToString();
+        if (update) UIManager.instance.lvText.text = level.ToString();
+        return level;
     }
 
     public void OnBuildCardClick(BuildCard build)
     {
         if (coin >= build.cost)
         {
+            // 状态 (CD)
+            _buildingUpgrading[build] = true;
+            build.UpdateButton();
+            build.MaskEffect();
+            this.Invoke(() =>
+            {
+                _buildingUpgrading[build] = false;
+                build.UpdateButton();
+                build.UpgradeCompleteEffect();
+            }, buildingDuration);
+
+
             SetCoin(coin - build.cost);
             build.level++;
             var scale = build.GetScale();
-            build.UpdateLevel(false);
-            UIManager.instance.StarFly(build.buildingObj.transform);
             build.buildingObj.transform.DOKill();
-            build.buildingObj.transform.DOScale(scale, fxBuildUpgradeDuration).SetEase(Ease.OutCubic);
-            if (fxBuildUpgrade)
-            {
-                var fx = Instantiate(fxBuildUpgrade);
-                fx.transform.position = build.buildingObj.transform.position + fxBuildUpgradeOffset;
-                fx.transform.localScale = fxBuildUpgradeScale;
-                fx.SetActive(true);
-                this.Invoke(() =>
+            build.buildingObj.transform.DOScale(scale, buildingDuration).SetEase(Ease.Linear)
+                .OnComplete(() =>
                 {
-                    DestroyGameObject(fx);
+                    // 音效
+                    if (sounds.buildComplete) sounds.buildComplete.Play();
+
+                    // 飞星星
+                    UIManager.instance.StarFly(build.buildingObj.transform);
+                    build.UpdateLevel(false, UIManager.instance.starFlyDuration);
+
+                    // 建造完成特效
                     if (fxBuildUpgradeComplete)
                     {
                         var fx = Instantiate(fxBuildUpgradeComplete);
@@ -950,16 +1163,198 @@ public class GameManager : MonoBehaviour
                         fx.SetActive(true);
                         this.Invoke(() =>
                         {
-                            DestroyGameObject(fx);
+                            Destroy(fx);
                         }, fxBuildUpgradeCompleteDuration);
                     }
-                }, fxBuildUpgradeDuration);
-            }
 
+                    // Q弹效果
+                    var curScale = build.buildingObj.transform.localScale;
+                    var bounceScale = buildUpgradeBounceFactor * scale;
+                    build.buildingObj.transform.DOKill();
+                    build.buildingObj.transform.DOScale(bounceScale, buildUpgradeBoundeDuration / 2f).SetEase(Ease.InCubic)
+                        .OnComplete(() =>
+                        {
+                            build.buildingObj.transform.DOScale(curScale, buildUpgradeBoundeDuration / 2f).SetEase(Ease.OutCubic);
+                        });
+                });
+
+            // 音效
+            if (sounds.building) sounds.building.Play();
+
+            // 建造特效
+            if (fxBuildUpgrade)
+            {
+                var fx1 = Instantiate(fxBuildUpgrade);
+                fx1.transform.position = build.buildingObj.transform.position + fxBuildUpgradeOffset1;
+                fx1.transform.localScale = fxBuildUpgradeScale;
+                fx1.SetActive(true);
+                this.Invoke(() =>
+                {
+                    Destroy(fx1);
+
+                }, fxBuildUpgradeDuration1);
+
+                this.Invoke(() =>
+                {
+                    var fx2 = Instantiate(fxBuildUpgrade);
+                    fx2.transform.position = build.buildingObj.transform.position + fxBuildUpgradeOffset2;
+                    fx2.transform.localScale = fxBuildUpgradeScale;
+                    fx2.SetActive(true);
+                    this.Invoke(() =>
+                    {
+                        Destroy(fx2);
+                    }, fxBuildUpgradeDuration2);
+                }, fxBuildUpgrade2StartTime);
+
+                this.Invoke(() =>
+                {
+                    var fx3 = Instantiate(fxBuildUpgrade);
+                    fx3.transform.position = build.buildingObj.transform.position + fxBuildUpgradeOffset3;
+                    fx3.transform.localScale = fxBuildUpgradeScale;
+                    fx3.SetActive(true);
+                    this.Invoke(() =>
+                    {
+                        Destroy(fx3);
+                    }, fxBuildUpgradeDuration3);
+
+                }, fxBuildUpgrade3StartTime);
+            }
+            SaveDataManager.SaveBuildingLevel(build);
         }
         else
         {
+            UIManager.instance.buyCoinAmount.text = $"x {buyCoinAmount}";
             UIManager.instance.buyCoinPanel.SetActive(true);
+        }
+    }
+
+    public string TriggerBonus(bool inc = true)
+    {
+        if (bonusList == null || bonusList.Length == 0) return null;
+
+        // 获取当前Bonus
+        var curBonus = bonusList[bonusIndex];
+        if (curBonus == null) return null;
+        int showPrgTotal = curBonus.pointNeed;
+        string result = null;
+
+        // 获取奖励并切换至下一Bonus
+        if (inc) bonusPrg++;
+        int showPrgCur = bonusPrg;
+        if (bonusPrg >= curBonus.pointNeed)
+        {
+            if (bonusIndex >= bonusList.Length) bonusIndex = 0;
+            else bonusIndex++;
+            showPrgCur = 0;
+            bonusPrg = 0;
+            var newBonus = bonusList[bonusIndex];
+            showPrgTotal = newBonus.pointNeed;
+            
+            // 奖励
+            switch (curBonus.type)
+            {
+                case BonusItem.BonusType.Stamina:
+                    SetStamina(stamina + (int)curBonus.value);
+                    break;
+
+                case BonusItem.BonusType.Coin:
+                    SetCoin(coin + curBonus.value);
+                    break;
+            }
+
+            // 文本
+            result = $"{curBonus.type} +{curBonus.value:#,0}";
+
+            // Buff
+            if (curBonus.buff != BonusItem.BuffType.None)
+            {
+                _buffRemainTime[curBonus.buff] = curBonus.buffTime;
+                _buffLastTime[curBonus.buff] = -1f;
+            }
+        }
+
+        // 更新
+        UIManager.instance.UpdateBonus(showPrgCur, showPrgTotal);
+        UpdateBuff();
+
+        return result;
+    }
+
+    public void UpdateBuff()
+    {
+        // 双倍金币
+        _buffRemainTime.TryGetValue(BonusItem.BuffType.DoubleCoin, out var dcRemainTime);
+        dcRemainTime -= Time.deltaTime;
+        _buffRemainTime[BonusItem.BuffType.DoubleCoin] = Mathf.Max(0f, dcRemainTime);
+        if (dcRemainTime > 0)
+        {
+            if (!UIManager.instance.buffDoubleCoin.activeSelf)
+            {
+                UIManager.instance.buffDoubleCoin.SetActive(true);
+            }
+            if (!_buffLastTime.TryGetValue(BonusItem.BuffType.DoubleCoin, out var dcLastTime)) dcLastTime = -1f;
+            if (Time.time - dcLastTime >= 1f)
+            {
+                UIManager.instance.buffDoubleCoinTime.text = Utils.GetTimeMMSS(dcRemainTime);
+            }
+            _buffRemainTime[BonusItem.BuffType.DoubleCoin] = dcRemainTime;
+            SaveDataManager.SaveBuffRemainTime();
+        }
+        else
+        {
+            if (UIManager.instance.buffDoubleCoin.activeSelf)
+            {
+                UIManager.instance.buffDoubleCoin.SetActive(false);
+            }
+        }
+
+        // 超级倍率
+        if (!_buffRemainTime.TryGetValue(BonusItem.BuffType.SuperBet, out var sbRemainTime)) sbRemainTime = -1f;
+        sbRemainTime -= Time.deltaTime;
+        _buffRemainTime[BonusItem.BuffType.SuperBet] = Mathf.Max(0f, sbRemainTime);
+        if (sbRemainTime > 0)
+        {
+            if (!UIManager.instance.buffSuperBet.activeSelf)
+            {
+                UIManager.instance.buffSuperBet.SetActive(true);
+            }
+            _buffLastTime.TryGetValue(BonusItem.BuffType.SuperBet, out var sbLastTime);
+            if (Time.time - sbLastTime >= 1f)
+            {
+                UIManager.instance.buffSuperBetTime.text = Utils.GetTimeMMSS(sbRemainTime);
+            }
+            _buffRemainTime[BonusItem.BuffType.SuperBet] = sbRemainTime;
+            SaveDataManager.SaveBuffRemainTime();
+        }
+        else
+        {
+            if (UIManager.instance.buffSuperBet.activeSelf)
+            {
+                UIManager.instance.buffSuperBet.SetActive(false);
+            }
+            SetBet(Mathf.Min(bet, maxBetNormal));
+        }
+    }
+
+    public bool HasBuff(BonusItem.BuffType type)
+    {
+        return _buffRemainTime.TryGetValue(type, out var time) && time > 0f;
+    }
+
+    public IEnumerator SendLoginRequest()
+    {
+        var deviceId = SystemInfo.deviceUniqueIdentifier;
+        Debug.Log($"Device id: {deviceId}");
+        UnityWebRequest req = UnityWebRequest.Get($"http://115.29.231.198/fuck/bairiyishanjin?user_id={deviceId}");
+        yield return req.SendWebRequest();
+
+        if (req.result == UnityWebRequest.Result.ProtocolError || req.result == UnityWebRequest.Result.ConnectionError)
+        {
+            Debug.LogError(req.error);
+        }
+        else
+        {
+            Debug.Log(req.downloadHandler.text);
         }
     }
 }

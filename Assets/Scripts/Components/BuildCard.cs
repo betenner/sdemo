@@ -1,4 +1,5 @@
-﻿using Sirenix.OdinInspector;
+﻿using DG.Tweening;
+using Sirenix.OdinInspector;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,10 +25,10 @@ public class BuildCard : MonoBehaviour
     [LabelText("名称"), OnValueChanged("UpdateName")]
     public string buildName;
 
-    [LabelText("最大等级"), Range(1, 6), OnValueChanged("@UpdateLevel(true)")]
+    [LabelText("最大等级"), Range(1, 6), OnValueChanged("@UpdateLevel(true, 0f)")]
     public int maxLevel = 3;
 
-    [LabelText("当前等级"), Min(0), OnValueChanged("@UpdateLevel(true)")]
+    [LabelText("当前等级"), Min(0), OnValueChanged("@UpdateLevel(true, 0f)")]
     public int level = 0;
 
     [LabelText("各等级缩放")]
@@ -37,6 +38,12 @@ public class BuildCard : MonoBehaviour
     public int[] levelCost;
 
     [Title("引用")]
+    [LabelText("容器")]
+    public Transform container;
+
+    [LabelText("蒙板")]
+    public Image mask;
+    
     [LabelText("建筑对象")]
     public GameObject buildingObj;
 
@@ -54,6 +61,28 @@ public class BuildCard : MonoBehaviour
 
     [LabelText("花费文本")]
     public TextMeshProUGUI costText;
+
+    [LabelText("升级完成特效")]
+    public GameObject upgradeCompleteEffect;
+
+    [Title("效果")]
+    [LabelText("蒙板开始颜色")]
+    public Color maskStartColor = new Color(0f, 0f, 0f, 0.7f);
+
+    [LabelText("蒙板结束颜色")]
+    public Color maskEndColor = new Color(0f, 0f, 0f, 0.2f);
+
+    [LabelText("升级完成特效缩放")]
+    public Vector3 upgradeCompleteEffectScale = Vector3.one;
+
+    [LabelText("升级完成特效持续时间")]
+    public float upgradeCompleteEffectDuration = 1f;
+
+    [LabelText("升级完成卡片缩放")]
+    public Vector3 upgradeCompleteCardScale = 1.2f * Vector3.one;
+
+    [LabelText("升级完成卡片缩放持续时间 (秒)")]
+    public float upgradeCompleteCardScaleDuration = 0.3f;
 
     public Action<BuildCard> onClick;
 
@@ -119,7 +148,7 @@ public class BuildCard : MonoBehaviour
     }
 
     private bool _updatingLevel = false;
-    public void UpdateLevel(bool updateScale = true)
+    public void UpdateLevel(bool updateScale = true, float levelUpdateDelay = 0f)
     {
         if (_updatingLevel) return;
         _updatingLevel = true;
@@ -138,7 +167,14 @@ public class BuildCard : MonoBehaviour
         }
         if (Application.isPlaying)
         {
-            GameManager.instance.UpdateLevel();
+            int level = GameManager.instance.UpdateLevel(levelUpdateDelay <= 0f);
+            if (levelUpdateDelay > 0f)
+            {
+                this.Invoke(() =>
+                {
+                    UIManager.instance.lvText.text = level.ToString();
+                }, levelUpdateDelay);
+            }
         }
         UpdateCost();
         if (updateScale) UpdateScale();
@@ -153,7 +189,46 @@ public class BuildCard : MonoBehaviour
 
     public void UpdateButton()
     {
-        if (_button) _button.interactable = level < maxLevel;
+        if (_button) _button.enabled = !GameManager.instance.IsBuildingUpgrading(this) && level < maxLevel;
+    }
+
+    public void UpgradeCompleteEffect()
+    {
+        // 特效
+        if (upgradeCompleteEffect)
+        {
+            var fx = Instantiate(upgradeCompleteEffect);
+            fx.transform.position = container.transform.position - Vector3.forward;
+            fx.transform.localScale = upgradeCompleteEffectScale;
+            fx.SetActive(true);
+            this.Invoke(() =>
+            {
+                Destroy(fx);
+            }, upgradeCompleteEffectDuration);
+        }
+
+        // 缩放
+        container.DOKill();
+        container.localScale = Vector3.one;
+        container.DOScale(upgradeCompleteCardScale, upgradeCompleteCardScaleDuration / 2f).OnComplete(() =>
+        {
+            container.DOScale(Vector3.one, upgradeCompleteCardScaleDuration / 2f);
+        });
+    }
+
+    public void MaskEffect()
+    {
+        if (mask)
+        {
+            mask.DOKill();
+            mask.color = maskStartColor;
+            mask.DOColor(maskEndColor, GameManager.instance.buildingDuration)
+                .SetEase(Ease.Linear)
+                .OnComplete(() =>
+                {
+                    mask.color = new Color(0f, 0f, 0f, 0f);
+                });
+        }
     }
 
     public void UpdateInfo()
