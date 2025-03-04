@@ -14099,6 +14099,7 @@ MonoBehaviour:
   hitBounceForce: 0.3
   hitMaxBounceTimes: 1
   hitPerfectThreshold: 0.06
+  hitPerfectXRange: 2
   hs_firstSpeed: 20
   hs_firstSpeedSlotCount: 0
   hs_firstDecSpeed: 0.1

@@ -199,8 +199,11 @@ public class GameManager : MonoBehaviour
     [LabelText("反弹次数"), Range(0, 5)]
     public int hitMaxBounceTimes = 1;
 
-    [LabelText("完美下落阈值 (越大越简单)"), Range(0.001f, 0.5f)]
+    [LabelText("完美下落阈值 (越大越简单)"), Range(0.001f, 0.5f), HideInInspector]
     public float hitPerfectThreshold = 0.03f;
+
+    [LabelText("完美下落范围 (距中心点X坐标差值, 单位米, 楼层宽度是5.5)")]
+    public float hitPerfectXRange = 2f;
 
     #endregion
 
@@ -997,7 +1000,7 @@ public class GameManager : MonoBehaviour
             }
             UIManager.instance.DisableButtons();
 
-            // 判定是否模拟完美
+            // 判定是否模拟完美 新版
             Vector3 targetPos;
             float dh = 0f;
             if (lastBlock == null)
@@ -1012,13 +1015,19 @@ public class GameManager : MonoBehaviour
             }
             var t = Mathf.Sqrt(2 * dh / gravity);
             bool simulate = false;
-            float rt;
-            if (activeBlock.transform.position.x < 0 && rb.velocity.x > 0 ||
-                activeBlock.transform.position.x >= 0f && rb.velocity.x < 0f)
+            //float rt;
+            //if (activeBlock.transform.position.x < 0 && rb.velocity.x > 0 ||
+            //    activeBlock.transform.position.x >= 0f && rb.velocity.x < 0f)
+            //{
+            //    rt = Mathf.Abs(activeBlock.transform.position.x) / Mathf.Abs(rb.velocity.x);
+            //    var dt = Mathf.Abs(rt - t);
+            //    simulate = Mathf.Abs(dt - 0.35f) <= hitPerfectThreshold;
+            //}
+            var px = activeBlock.transform.position.x;
+            var vx = rigidBody.velocity.x;
+            if (px <= 0f && vx >= 0f || px >= 0f && vx <= 0f)
             {
-                rt = Mathf.Abs(activeBlock.transform.position.x) / Mathf.Abs(rb.velocity.x);
-                var dt = Mathf.Abs(rt - t);
-                simulate = Mathf.Abs(dt - 0.35f) <= hitPerfectThreshold;
+                simulate = Mathf.Abs(px) <= hitPerfectXRange;
             }
             if (simulate) controller.SimulatePerfectDrop(targetPos, t, lastBlock, onCollisionEnd);
         }
