@@ -5627,7 +5627,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 32.99994, y: -58.999878}
+  m_AnchoredPosition: {x: 33, y: -59}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0, y: 1}
 --- !u!1001 &296584453
@@ -14148,10 +14148,16 @@ MonoBehaviour:
   fxSlotDoneDuration: 2
   fxSlotDoneScale: {x: 3, y: 3, z: 3}
   fxSlotDoneOffset: {x: 0, y: 0, z: -4}
-  fxCoinShower: {fileID: 129898, guid: 378802752c7bb664bac61ec52ef70a5d, type: 3}
+  fxCoinShower: {fileID: 8563599308486965117, guid: aa6f5f805cdc1db4681b551dc7328d58,
+    type: 3}
   fxCoinShowerDuration: 2
-  fxCoinShowerScale: {x: 200, y: 200, z: 200}
-  fxCoinShowerOffset: {x: 0, y: 100, z: -100}
+  fxCoinShowerScale: {x: 300, y: 300, z: 300}
+  fxCoinShowerOffset: {x: 0, y: 0, z: -100}
+  fxCoinShowerBig: {fileID: 7745574655572566353, guid: 241d526b211009041ac5c5d6f0278e3c,
+    type: 3}
+  fxCoinShowerBigDuration: 1
+  fxCoinShowerBigScale: {x: 300, y: 300, z: 300}
+  fxCoinShowerBigOffset: {x: 0, y: 0, z: -100}
   fxBuildUpgrade: {fileID: 121806, guid: 4dbaeaca9d7e967419f27723f2718287, type: 3}
   fxBuildUpgradeScale: {x: 4, y: 4, z: 4}
   fxBuildUpgradeOffset1: {x: -2, y: 2, z: -1}
@@ -24119,7 +24125,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -274, y: -96}
+  m_AnchoredPosition: {x: -482.5, y: -102.9}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 1, y: 1}
 --- !u!1001 &1399750441

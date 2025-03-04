@@ -384,6 +384,18 @@ public class GameManager : MonoBehaviour
     [LabelText("金币特效偏移")]
     public Vector3 fxCoinShowerOffset = 100f * Vector3.back;
 
+    [LabelText("大金币特效")]
+    public GameObject fxCoinShowerBig;
+
+    [LabelText("大金币特效时间 (秒)"), Range(0.1f, 10f)]
+    public float fxCoinShowerBigDuration = 1f;
+
+    [LabelText("大金币特效缩放")]
+    public Vector3 fxCoinShowerBigScale = 120f * Vector3.one;
+
+    [LabelText("大金币特效偏移")]
+    public Vector3 fxCoinShowerBigOffset = 100f * Vector3.back;
+
     [LabelText("建筑升级特效")]
     public GameObject fxBuildUpgrade;
 
@@ -860,16 +872,25 @@ public class GameManager : MonoBehaviour
                     UIManager.instance.ShowPopup(rewardText, true);
 
                     // 特效
-                    if (fxCoinShower)
+                    if (GetBuffRemainTime(BonusItem.BuffType.DoubleCoin) <= 0f && fxCoinShower)
                     {
                         var fxGo = Instantiate(fxCoinShower);
                         fxGo.transform.SetParent(UIManager.instance.coinFxTarget);
                         fxGo.transform.SetLocalPositionAndRotation(fxCoinShowerOffset, Quaternion.identity);
                         fxGo.transform.localScale = fxCoinShowerScale;
-                        //fxGo.transform.position = UIManager.instance.coinFxTarget.position;
                         fxGo.SetActive(true);
                         this.Invoke(() => DestroyGameObject(fxGo), fxCoinShowerDuration);
                     }
+                    if (GetBuffRemainTime(BonusItem.BuffType.DoubleCoin) > 0f && fxCoinShowerBig)
+                    {
+                        var fxGo = Instantiate(fxCoinShowerBig);
+                        fxGo.transform.SetParent(UIManager.instance.coinFxTarget);
+                        fxGo.transform.SetLocalPositionAndRotation(fxCoinShowerBigOffset, Quaternion.identity);
+                        fxGo.transform.localScale = fxCoinShowerBigScale;
+                        fxGo.SetActive(true);
+                        this.Invoke(() => DestroyGameObject(fxGo), fxCoinShowerBigDuration);
+                    }
+
                     if (fxSlotDone)
                     {
                         var fxSlotDoneGo = Instantiate(fxSlotDone);
