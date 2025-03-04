@@ -7,6 +7,7 @@ using System.Collections;
 using UnityEngine;
 using BEGroup.Utility;
 using UnityEngine.Networking;
+using System.Linq;
 
 public class GameManager : MonoBehaviour
 {
@@ -384,6 +385,9 @@ public class GameManager : MonoBehaviour
     [LabelText("金币特效偏移")]
     public Vector3 fxCoinShowerOffset = 100f * Vector3.back;
 
+    [LabelText("金币特效对应Slot的ID列表")]
+    public int[] fxCoinSlotList;
+
     [LabelText("大金币特效")]
     public GameObject fxCoinShowerBig;
 
@@ -395,6 +399,24 @@ public class GameManager : MonoBehaviour
 
     [LabelText("大金币特效偏移")]
     public Vector3 fxCoinShowerBigOffset = 100f * Vector3.back;
+
+    [LabelText("大金币特效对应Slot的ID列表")]
+    public int[] fxCoinBigSlotList;
+
+    [LabelText("事件金币特效")]
+    public GameObject fxCoinShowerEvent;
+
+    [LabelText("事件金币特效时间 (秒)"), Range(0.1f, 10f)]
+    public float fxCoinShowerEventDuration = 1f;
+
+    [LabelText("事件金币特效缩放")]
+    public Vector3 fxCoinShowerEventScale = 400f * Vector3.one;
+
+    [LabelText("事件金币特效偏移")]
+    public Vector3 fxCoinShowerEventOffset = new Vector3(0f, -800f, -100f);
+
+    [LabelText("事件金币特效对应Slot的ID列表")]
+    public int[] fxCoinEventSlotList;
 
     [LabelText("建筑升级特效")]
     public GameObject fxBuildUpgrade;
@@ -872,7 +894,7 @@ public class GameManager : MonoBehaviour
                     UIManager.instance.ShowPopup(rewardText, true);
 
                     // 特效
-                    if (GetBuffRemainTime(BonusItem.BuffType.DoubleCoin) <= 0f && fxCoinShower)
+                    if (fxCoinShower && fxCoinSlotList.Contains(slotId))
                     {
                         var fxGo = Instantiate(fxCoinShower);
                         fxGo.transform.SetParent(UIManager.instance.coinFxTarget);
@@ -881,7 +903,7 @@ public class GameManager : MonoBehaviour
                         fxGo.SetActive(true);
                         this.Invoke(() => DestroyGameObject(fxGo), fxCoinShowerDuration);
                     }
-                    if (GetBuffRemainTime(BonusItem.BuffType.DoubleCoin) > 0f && fxCoinShowerBig)
+                    else if (fxCoinShowerBig && fxCoinBigSlotList.Contains(slotId))
                     {
                         var fxGo = Instantiate(fxCoinShowerBig);
                         fxGo.transform.SetParent(UIManager.instance.coinFxTarget);
@@ -889,6 +911,15 @@ public class GameManager : MonoBehaviour
                         fxGo.transform.localScale = fxCoinShowerBigScale;
                         fxGo.SetActive(true);
                         this.Invoke(() => DestroyGameObject(fxGo), fxCoinShowerBigDuration);
+                    }
+                    else if (fxCoinShowerEvent && fxCoinEventSlotList.Contains(slotId))
+                    {
+                        var fxGo = Instantiate(fxCoinShowerEvent);
+                        fxGo.transform.SetParent(UIManager.instance.coinFxTarget);
+                        fxGo.transform.SetLocalPositionAndRotation(fxCoinShowerEventOffset, Quaternion.identity);
+                        fxGo.transform.localScale = fxCoinShowerEventScale;
+                        fxGo.SetActive(true);
+                        this.Invoke(() => DestroyGameObject(fxGo), fxCoinShowerEventDuration);
                     }
 
                     if (fxSlotDone)

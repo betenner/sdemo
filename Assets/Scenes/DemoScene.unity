@@ -11898,7 +11898,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7919684e7a9be04798b26cea598d765, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  id: 2
+  id: 4
   slotType: 0
   weight: 100
   image: {fileID: 21300000, guid: 0b05896e8b356334386887882a30e2da, type: 3}
@@ -14153,11 +14153,19 @@ MonoBehaviour:
   fxCoinShowerDuration: 2.5
   fxCoinShowerScale: {x: 900, y: 900, z: 900}
   fxCoinShowerOffset: {x: 0, y: -800, z: -100}
+  fxCoinSlotList: 02000000030000000400000007000000
   fxCoinShowerBig: {fileID: 7745574655572566353, guid: 241d526b211009041ac5c5d6f0278e3c,
     type: 3}
   fxCoinShowerBigDuration: 2.5
   fxCoinShowerBigScale: {x: 400, y: 400, z: 400}
   fxCoinShowerBigOffset: {x: 0, y: -800, z: -100}
+  fxCoinBigSlotList: 01000000
+  fxCoinShowerEvent: {fileID: 4624938859564471309, guid: aba9a4e48fd265247a0a55abb9b71027,
+    type: 3}
+  fxCoinShowerEventDuration: 2.5
+  fxCoinShowerEventScale: {x: 400, y: 400, z: 400}
+  fxCoinShowerEventOffset: {x: 0, y: -800, z: -100}
+  fxCoinEventSlotList: 0500000006000000
   fxBuildUpgrade: {fileID: 121806, guid: 4dbaeaca9d7e967419f27723f2718287, type: 3}
   fxBuildUpgradeScale: {x: 4, y: 4, z: 4}
   fxBuildUpgradeOffset1: {x: -2, y: 2, z: -1}
