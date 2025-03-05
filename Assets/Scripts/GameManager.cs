@@ -1313,7 +1313,7 @@ public class GameManager : MonoBehaviour
         }
 
         // 更新
-        UIManager.instance.UpdateBonus(showPrgCur, showPrgTotal);
+        UIManager.instance.UpdateBonus(showPrgCur, showPrgTotal, curBonus.icon);
         UpdateBuff();
 
         return result;

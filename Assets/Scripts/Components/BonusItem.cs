@@ -1,4 +1,5 @@
-﻿using Sirenix.OdinInspector;
+﻿using InspectorGadgets.Attributes;
+using Sirenix.OdinInspector;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,4 +36,7 @@ public class BonusItem : MonoBehaviour
 
     [LabelText("Buff持续时间 (秒)"), Range(5, 3600)]
     public int buffTime = 300;
+
+    [LabelText("奖励图标"), PreviewField]
+    public Sprite icon;
 }

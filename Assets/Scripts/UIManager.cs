@@ -109,6 +109,9 @@ public class UIManager : MonoBehaviour
     [LabelText("Bonus文本")]
     public TextMeshProUGUI bonusText;
 
+    [LabelText("Bonus图标")]
+    public Image bonusIcon;
+
     [LabelText("Bonus进度条")]
     public Slider bonusSlider;
 
@@ -377,9 +380,11 @@ public class UIManager : MonoBehaviour
         });
     }
 
-    public void UpdateBonus(int curPoint, int needPoint)
+    public void UpdateBonus(int curPoint, int needPoint, Sprite icon = null)
     {
         bonusText.text = $"Bonus: {curPoint} / {needPoint}";
         bonusSlider.value = (float)curPoint / needPoint;
+        bonusIcon.gameObject.SetActive(icon);
+        bonusIcon.sprite = icon;
     }
 }
