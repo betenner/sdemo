@@ -136,6 +136,24 @@ public class UIManager : MonoBehaviour
     [LabelText("执行清除据按钮")]
     public Button doClearDataButton;
 
+    [LabelText("金币图标预制体")]
+    public GameObject iconCoinPrefab;
+
+    [LabelText("体力图标预制体")]
+    public GameObject iconStaminaPrefab;
+
+    [LabelText("Bonus图标飞行起点")]
+    public Transform bonusIconFrom;
+
+    [LabelText("Bonus图标飞行金币终点")]
+    public Transform bonusIconToCoin;
+
+    [LabelText("Bonus图标飞行体力终点")]
+    public Transform bonusIconToStamina;
+
+    [LabelText("Bonus图标飞行时间")]
+    public float bonusIconFlyTime = 1f;
+
     private void Awake()
     {
         _instance = this;
@@ -225,9 +243,10 @@ public class UIManager : MonoBehaviour
         GameManager.instance.SetBet(curBet);
     }
 
-    public void ShowPopup(string text, bool showIcon = false, bool showBad = false, bool showGood = false, bool showPerfect = false)
+    public void ShowPopup(string text, bool showIcon = false, bool showBad = false, bool showGood = false, bool showPerfect = false, Sprite icon = null)
     {
         popImage.gameObject.SetActive(showBad || showGood || showPerfect);
+        if (icon != null) popIcon.sprite = icon;
         popIcon.gameObject.SetActive(showIcon);
         popText.gameObject.SetActive(!showBad && !showGood && !showPerfect);
         Sprite sprite = null;
@@ -386,5 +405,37 @@ public class UIManager : MonoBehaviour
         bonusSlider.value = (float)curPoint / needPoint;
         bonusIcon.gameObject.SetActive(icon);
         bonusIcon.sprite = icon;
+    }
+
+    public void BonusIconFly(BonusItem bonus)
+    {
+        if (bonus == null) return;
+        GameObject prefab = null;
+        Transform to = null;
+        switch (bonus.type)
+        {
+            case BonusItem.BonusType.Stamina:
+                prefab = iconStaminaPrefab;
+                to = bonusIconToStamina;
+                break;
+
+            case BonusItem.BonusType.Coin:
+                prefab = iconCoinPrefab;
+                to = bonusIconToCoin;
+                break;
+        }
+        if (!prefab || !to) return;
+        var go = Instantiate(prefab);
+        go.transform.parent = fxLayer;
+        go.transform.localScale = 7f / 8f * Vector3.one;
+        go.transform.position = bonusIconFrom.position;
+        go.SetActive(true);
+        go.transform.DOKill();
+        go.transform.DOScale(Vector3.one, bonusIconFlyTime).SetEase(Ease.Linear);
+        go.transform.DOMove(to.position, bonusIconFlyTime).SetEase(Ease.InCubic);
+        this.Invoke(() =>
+        {
+            Destroy(go);
+        }, bonusIconFlyTime);
     }
 }

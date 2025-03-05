@@ -84,6 +84,7 @@ public class GameManager : MonoBehaviour
     public Sprite maxBetBuffButtonStyle;
 
     public int bet { get; private set; }
+    public int _usingBet;
 
     #endregion
 
@@ -740,6 +741,7 @@ public class GameManager : MonoBehaviour
 
     public void DropActiveBlock()
     {
+        _usingBet = bet;
         void onCollisionEnd(GameObject target, bool simulated)
         {
             // 成功
@@ -852,7 +854,7 @@ public class GameManager : MonoBehaviour
                     if (controller.slotController.slot3) controller.slotController.slot3.maskInteraction = SpriteMaskInteraction.None;
 
                     // 特殊Slot类型
-                    string appendText = null;
+                    BonusItem bonus = null;
                     if (_slots.TryGetValue(slotId, out var slot))
                     {
                         Debug.Log($"Slot类型: {slot.slotType}");
@@ -867,7 +869,7 @@ public class GameManager : MonoBehaviour
                                 break;
 
                             case SlotItem.SlotType.Bonus:
-                                appendText = TriggerBonus();
+                                bonus = TriggerBonus();
                                 break;
                         }
                     }
@@ -890,11 +892,19 @@ public class GameManager : MonoBehaviour
                         SoundManager.instance.rewardBig.Play();
                     }
                     string rewardText = $"+{(long)reward:#,0}";
-                    if (!string.IsNullOrEmpty(appendText))
+                    //if (!string.IsNullOrEmpty(appendText))
+                    //{
+                    //    rewardText += $"\n{appendText}";
+                    //}
+                    if (bonus == null)
                     {
-                        rewardText += $"\n{appendText}";
+                        UIManager.instance.ShowPopup(rewardText, true);
                     }
-                    UIManager.instance.ShowPopup(rewardText, true);
+                    else
+                    {
+                        UIManager.instance.ShowPopup($"+{bonus.value:#,0}", true, false, false, false, bonus.icon);
+                        UIManager.instance.BonusIconFly(bonus);
+                    }
 
                     // 特效
                     if (fxCoinShower && fxCoinSlotList.Contains(slotId))
@@ -1267,20 +1277,21 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public string TriggerBonus(bool inc = true)
+    public BonusItem TriggerBonus(bool inc = true)
     {
         if (bonusList == null || bonusList.Length == 0) return null;
 
         // 获取当前Bonus
         var curBonus = bonusList[bonusIndex];
         if (curBonus == null) return null;
+        var newBonus = curBonus;
         int showPrgTotal = curBonus.pointNeed;
-        string result = null;
+        BonusItem result = null;
 
         // 获取奖励并切换至下一Bonus
         if (inc)
         {
-            bonusPrg += bet;
+            bonusPrg += _usingBet;
         }
         int showPrgCur = bonusPrg;
         if (bonusPrg >= curBonus.pointNeed)
@@ -1289,7 +1300,7 @@ public class GameManager : MonoBehaviour
             else bonusIndex++;
             showPrgCur = 0;
             bonusPrg = 0;
-            var newBonus = bonusList[bonusIndex];
+            newBonus = bonusList[bonusIndex];
             showPrgTotal = newBonus.pointNeed;
             
             // 奖励
@@ -1305,7 +1316,7 @@ public class GameManager : MonoBehaviour
             }
 
             // 文本
-            result = $"{curBonus.type} +{curBonus.value:#,0}";
+            result = curBonus; //$"{curBonus.type} +{curBonus.value:#,0}";
 
             // Buff
             if (curBonus.buff != BonusItem.BuffType.None)
@@ -1316,7 +1327,7 @@ public class GameManager : MonoBehaviour
         }
 
         // 更新
-        UIManager.instance.UpdateBonus(showPrgCur, showPrgTotal, curBonus.icon);
+        UIManager.instance.UpdateBonus(showPrgCur, showPrgTotal, newBonus.icon);
         UpdateBuff();
 
         return result;
