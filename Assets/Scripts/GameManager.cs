@@ -1278,7 +1278,10 @@ public class GameManager : MonoBehaviour
         string result = null;
 
         // 获取奖励并切换至下一Bonus
-        if (inc) bonusPrg++;
+        if (inc)
+        {
+            bonusPrg += bet;
+        }
         int showPrgCur = bonusPrg;
         if (bonusPrg >= curBonus.pointNeed)
         {
